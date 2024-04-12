@@ -7,11 +7,11 @@
 #include "Assembler.h"
 #include "stdio.h"
 
-void assemble(const char* inputFilename) {
+void Assemble(const char* inputFilename) {
     printf("Assembling input file: %s\n", inputFilename);
     ParsedFile parsedFile = ParseFile(inputFilename);
     ProcessMacro(&parsedFile);
-    FirstPass(inputFilename);
-    SecondPass(inputFilename);
-    CreateOutput(inputFilename);
+    FirstPass(&parsedFile);
+    SecondPass(&parsedFile);
+    CreateOutput(&parsedFile);
 }

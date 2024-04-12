@@ -1,7 +1,7 @@
 #include "CreateOutput.h"
 #include <stdio.h>
 
-void CreateOutput(const char* inputFilename) {
+void CreateOutput(ParsedFile* parsedFile) {
     // Implement object file creation logic here
-    printf("Creating object file for: %s\n", inputFilename);
+    printf("Creating object file for: %s\n", parsedFile->fileName);
 }

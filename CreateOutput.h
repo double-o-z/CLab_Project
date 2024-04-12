@@ -1,8 +1,9 @@
 // CreateOutput.h
 #ifndef CREATEOUTPUT_H
 #define CREATEOUTPUT_H
+#include "helper.h"
 
-void CreateOutput(const char* inputFilename);
+void CreateOutput(ParsedFile* parsedFile);
 
 #endif
 

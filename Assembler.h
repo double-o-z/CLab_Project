@@ -1,8 +1,9 @@
 // Assembler.h
 #ifndef ASSEMBLER_H
 #define ASSEMBLER_H
+#include "helper.h"
 
-void assemble(const char* inputFilename);
+void Assemble(const char* inputFilename);
 
 #endif
 

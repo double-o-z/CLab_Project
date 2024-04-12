@@ -1,7 +1,7 @@
 #include "SecondPass.h"
 #include <stdio.h>
 
-void SecondPass(const char* inputFilename) {
+void SecondPass(ParsedFile* parsedFile) {
     // Implement second pass logic here
-    printf("Second pass for: %s\n", inputFilename);
+    printf("Second pass for: %s\n", parsedFile->fileName);
 }

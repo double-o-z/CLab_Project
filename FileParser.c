@@ -59,10 +59,17 @@ char* trimWhitespace(char* str) {
 ParsedFile ParseFile(const char* filename) {
     printf("Parsing file: %s\n", filename);
     ParsedFile parsedFile = { .lines = NULL, .numberOfLines = 0, .fileName = filename };
-    FILE* file = fopen(parsedFile.fileName, "r");
+
+    // Create the full filename by appending ".as"
+    char* fullFilename = malloc(strlen(parsedFile.fileName) + 4); // +3 for ".as" +1 for null terminator
+    sprintf(fullFilename, "%s.as", parsedFile.fileName);
+
+    // Open the file with ".as" extension
+    FILE* file = fopen(fullFilename, "r");
     if (file == NULL) {
-        fprintf(stderr, "Error opening file.\n");
-        return parsedFile;
+        fprintf(stderr, "Error opening file: %s\n", fullFilename);
+        free(fullFilename);
+        return parsedFile; // Return with error
     }
 
     // Allocate memory for the dynamic list

@@ -25,20 +25,53 @@ void ensureMacroListCapacity(MacroList* list) {
     }
 }
 
+void writeFileIfMacrosExist(ParsedFile* parsedFile) {
+    if (parsedFile->numberOfLines > 0) {
+
+        char* newFilename = malloc(strlen(parsedFile->fileName) + 3); // Extra space for null terminator and extension change
+        strcpy(newFilename, parsedFile->fileName);
+
+        // Find the last occurrence of '.as'
+        char* extension = strrchr(newFilename, '.');
+        if (extension != NULL && strcmp(extension, ".as") == 0) {
+            strcpy(extension, ".am"); // Replace ".as" with ".am"
+        } else {
+            // If no ".as" found, append ".am"
+            strcat(newFilename, ".am");
+        }
+
+        FILE* file = fopen(newFilename, "w");
+        if (file != NULL) {
+            for (int i = 0; i < parsedFile->numberOfLines; i++) {
+                fprintf(file, "%s\n", parsedFile->lines[i]);
+            }
+            fclose(file);
+            printf("Output file created: %s\n", newFilename);
+        } else {
+            printf("Failed to create output file.\n");
+        }
+        free(newFilename);
+    } else {
+        printf("No macros were processed; no output file created.\n");
+    }
+}
+
 void ProcessMacro(ParsedFile* parsedFile) {
     printf("Processing macros for file: %s\n", parsedFile->fileName);
-    
+
     MacroList macroList = { .macros = malloc(sizeof(Macro) * INITIAL_MACRO_LIST_CAPACITY), .capacity = INITIAL_MACRO_LIST_CAPACITY, .count = 0 };
     char** newLines = malloc(sizeof(char*) * parsedFile->numberOfLines);
     int newLineCount = 0;
     char macroName[MACRO_NAME_BUFFER_SIZE];
     int inMacro = 0;
+    int macrosExist = 0;
 
     for (int i = 0; i < parsedFile->numberOfLines; i++) {
         char* line = parsedFile->lines[i];
 
         if (sscanf(line, "mcr %99s", macroName) == 1) {
             inMacro = 1;
+            macrosExist = 1;
             ensureMacroListCapacity(&macroList);
             Macro* newMacro = &macroList.macros[macroList.count++];
             newMacro->name = strDuplicate(macroName);
@@ -84,6 +117,13 @@ void ProcessMacro(ParsedFile* parsedFile) {
 
     parsedFile->lines = newLines;
     parsedFile->numberOfLines = newLineCount;
+
+    // Write to file if macros were processed
+    if (macrosExist) {
+        writeFileIfMacrosExist(parsedFile);
+    } else {
+        printf("No macros were processed; no changes were made to the file.\n");
+    }
 
     // Cleanup
     for (int i = 0; i < macroList.count; i++) {
