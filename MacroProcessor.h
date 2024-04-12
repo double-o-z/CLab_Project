@@ -3,6 +3,12 @@
 #define MACROPROCESSOR_H
 #include "helper.h"
 
+#define INITIAL_MACRO_CAPACITY 5
+#define INCREMENTAL_MACRO_CAPACITY 5
+#define INITIAL_MACRO_LIST_CAPACITY 5
+#define INCREMENTAL_MACRO_LIST_CAPACITY 5
+#define MACRO_NAME_BUFFER_SIZE 100
+
 typedef struct {
     char* name;
     char** lines;

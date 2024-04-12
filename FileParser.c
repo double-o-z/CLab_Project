@@ -75,7 +75,7 @@ ParsedFile ParseFile(const char* filename) {
     int capacity = INITIAL_CAPACITY;
     int size = 0;
 
-    char buffer[256]; // Assuming maximum line length of 256 characters
+    char buffer[MAX_LINE_LENGTH]; // Assuming maximum line length
 
     // Read lines from the file
     while (fgets(buffer, sizeof(buffer), file) != NULL) {

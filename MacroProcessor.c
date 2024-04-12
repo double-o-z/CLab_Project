@@ -3,53 +3,52 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define MAX_LINE_LENGTH 256
-
 void ensureMacroCapacity(Macro* macro) {
     if (macro->lineCount >= macro->capacity) {
-        macro->capacity += 5;
+        macro->capacity += INCREMENTAL_MACRO_CAPACITY;
         macro->lines = realloc(macro->lines, sizeof(char*) * macro->capacity);
         if (macro->lines == NULL) {
             fprintf(stderr, "Memory allocation failed for macro lines!\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 }
 
 void ensureMacroListCapacity(MacroList* list) {
     if (list->count >= list->capacity) {
-        list->capacity += 5;
+        list->capacity += INCREMENTAL_MACRO_LIST_CAPACITY;
         list->macros = realloc(list->macros, sizeof(Macro) * list->capacity);
         if (list->macros == NULL) {
             fprintf(stderr, "Memory allocation failed for macros list!\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 }
 
 void ProcessMacro(ParsedFile* parsedFile) {
-    MacroList macroList = { .macros = malloc(sizeof(Macro) * 5), .capacity = 5, .count = 0 };
+    printf("Processing macros for file: %s\n", parsedFile->fileName);
+    
+    MacroList macroList = { .macros = malloc(sizeof(Macro) * INITIAL_MACRO_LIST_CAPACITY), .capacity = INITIAL_MACRO_LIST_CAPACITY, .count = 0 };
     char** newLines = malloc(sizeof(char*) * parsedFile->numberOfLines);
     int newLineCount = 0;
-    char macroName[100];
+    char macroName[MACRO_NAME_BUFFER_SIZE];
     int inMacro = 0;
 
     for (int i = 0; i < parsedFile->numberOfLines; i++) {
         char* line = parsedFile->lines[i];
 
-        // Handling macro definitions
         if (sscanf(line, "mcr %99s", macroName) == 1) {
             inMacro = 1;
             ensureMacroListCapacity(&macroList);
             Macro* newMacro = &macroList.macros[macroList.count++];
             newMacro->name = strDuplicate(macroName);
-            newMacro->capacity = 5;
+            newMacro->capacity = INITIAL_MACRO_CAPACITY;
             newMacro->lines = malloc(sizeof(char*) * newMacro->capacity);
             newMacro->lineCount = 0;
             continue;
         }
 
-        if (strstr(line, "endmcr") && inMacro) {
+        if (strstr(line, "endmcr")) {
             inMacro = 0;
             continue;
         }
@@ -60,7 +59,6 @@ void ProcessMacro(ParsedFile* parsedFile) {
             continue;
         }
 
-        // Expanding macros
         if (sscanf(line, "%99s", macroName) == 1 && !inMacro) {
             int found = 0;
             for (int j = 0; j < macroList.count; j++) {
@@ -75,7 +73,6 @@ void ProcessMacro(ParsedFile* parsedFile) {
             if (found) continue;
         }
 
-        // Regular lines
         newLines[newLineCount++] = strDuplicate(line);
     }
 
