@@ -4,9 +4,9 @@
 #include <string.h>
 
 void printAllLines(ParsedFile parsedFile) {
-    printf("parsedFile contains %d lines:\n", parsedFile.numberOfLines);
+    printf("parsedFile contains %d lines:\n\n", parsedFile.numberOfLines);
     for (int i = 0; i < parsedFile.numberOfLines; i++) {
-        printf("Line %d: %s\n", i + 1, parsedFile.lines[i]);
+        printf("\t%s\n\n", parsedFile.lines[i]);
     }
 }
 
