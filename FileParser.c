@@ -115,6 +115,7 @@ ParsedFile ParseFile(const char* filename) {
     }
 
     fclose(file);
+    free(fullFilename);
 
     parsedFile.lines = lines;
     parsedFile.numberOfLines = size;

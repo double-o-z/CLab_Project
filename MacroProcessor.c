@@ -27,30 +27,20 @@ void ensureMacroListCapacity(MacroList* list) {
 
 void writeFileIfMacrosExist(ParsedFile* parsedFile) {
     if (parsedFile->numberOfLines > 0) {
+        char* fullFilename = malloc(strlen(parsedFile->fileName) + 4); // +3 for ".as" +1 for null terminator
+        sprintf(fullFilename, "%s.am", parsedFile->fileName);
 
-        char* newFilename = malloc(strlen(parsedFile->fileName) + 3); // Extra space for null terminator and extension change
-        strcpy(newFilename, parsedFile->fileName);
-
-        // Find the last occurrence of '.as'
-        char* extension = strrchr(newFilename, '.');
-        if (extension != NULL && strcmp(extension, ".as") == 0) {
-            strcpy(extension, ".am"); // Replace ".as" with ".am"
-        } else {
-            // If no ".as" found, append ".am"
-            strcat(newFilename, ".am");
-        }
-
-        FILE* file = fopen(newFilename, "w");
+        FILE* file = fopen(fullFilename, "w");
         if (file != NULL) {
             for (int i = 0; i < parsedFile->numberOfLines; i++) {
                 fprintf(file, "%s\n", parsedFile->lines[i]);
             }
             fclose(file);
-            printf("Output file created: %s\n", newFilename);
+            printf("Output file created: %s\n", fullFilename);
         } else {
-            printf("Failed to create output file.\n");
+            printf("Failed to create output file: %s\n", fullFilename);
         }
-        free(newFilename);
+        free(fullFilename);
     } else {
         printf("No macros were processed; no output file created.\n");
     }
