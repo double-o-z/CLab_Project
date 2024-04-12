@@ -2,7 +2,7 @@
 #ifndef MACROPROCESSOR_H
 #define MACROPROCESSOR_H
 
-void processMacro(const char* inputFilename, const char* outputFilename);
+void ProcessMacro(const char* inputFilename);
 
 #endif
 

@@ -1,6 +1,4 @@
 // Main.c
-#include "FileParser.h"
-#include "MacroProcessor.h"
 #include "Assembler.h"
 #include <stdio.h>
 
@@ -12,8 +10,6 @@ int main(int argc, char** argv) {
 
     for (int i = 1; i < argc; i++) {
         const char* inputFilename = argv[i];
-        parseFile(inputFilename);
-        processMacro(inputFilename, "output.am");
         assemble(inputFilename);
     }
 
