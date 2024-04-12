@@ -1,8 +1,13 @@
-// FileParser.h
-#ifndef FILEPARSER_H
-#define FILEPARSER_H
+#ifndef PARSE_FILE_H
+#define PARSE_FILE_H
 
-void ParseFile(const char* filename);
+typedef struct {
+    char** lines;
+    int numberOfLines;
+} ParsedFile;
 
-#endif
+ParsedFile ParseFile(const char* filename);
 
+void ReleaseLines(char** lines);
+
+#endif /* PARSE_FILE_H */
