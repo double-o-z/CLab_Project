@@ -8,17 +8,6 @@
 #define INITIAL_CAPACITY 10
 #define CAPACITY_INCREMENT 10
 
-// Function to duplicate a string, and dynamically assign memory to the new string, by its length.
-char* strDuplicate(const char* str) {
-    size_t len = strlen(str) + 1;
-    char* new_str = malloc(len);
-    if (new_str == NULL) {
-        return NULL;
-    }
-    memcpy(new_str, str, len);
-    return new_str;
-}
-
 // Trims leading and trailing whitespace, replaces consecutive whitespace with a single space,
 // and removes any tabs between whitespace and ',' characters in the input string.
 char* trimWhitespace(char* str) {
@@ -68,12 +57,12 @@ char* trimWhitespace(char* str) {
 
 // Function to parse the input file
 ParsedFile ParseFile(const char* filename) {
-    ParsedFile result = { .lines = NULL, .numberOfLines = 0 };
     printf("Parsing file: %s\n", filename);
-    FILE* file = fopen(filename, "r");
+    ParsedFile parsedFile = { .lines = NULL, .numberOfLines = 0, .fileName = filename };
+    FILE* file = fopen(parsedFile.fileName, "r");
     if (file == NULL) {
         fprintf(stderr, "Error opening file.\n");
-        return result;
+        return parsedFile;
     }
 
     // Allocate memory for the dynamic list
@@ -81,7 +70,7 @@ ParsedFile ParseFile(const char* filename) {
     if (lines == NULL) {
         fprintf(stderr, "Error allocating memory.\n");
         fclose(file);
-        return result;
+        return parsedFile;
     }
     int capacity = INITIAL_CAPACITY;
     int size = 0;
@@ -106,9 +95,9 @@ ParsedFile ParseFile(const char* filename) {
                 fprintf(stderr, "Error reallocating memory.\n");
                 fclose(file);
                 free(lines);
-                result.lines = NULL; // Set to NULL to indicate an error
-                result.numberOfLines = 0;
-                return result;
+                parsedFile.lines = NULL; // Set to NULL to indicate an error
+                parsedFile.numberOfLines = 0;
+                return parsedFile;
             }
             lines = temp;
         }
@@ -120,12 +109,9 @@ ParsedFile ParseFile(const char* filename) {
 
     fclose(file);
 
-    // Iterate over the parsed lines and print them for clarity
-    for (int i = 0; i < size; i++) {
-        printf("Line %d: %s\n", i + 1, lines[i]);
-    }
+    parsedFile.lines = lines;
+    parsedFile.numberOfLines = size;
 
-    result.lines = lines;
-    result.numberOfLines = size;
-    return result;
+    printAllLines(parsedFile);
+    return parsedFile;
 }

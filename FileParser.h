@@ -1,10 +1,6 @@
 #ifndef PARSE_FILE_H
 #define PARSE_FILE_H
-
-typedef struct {
-    char** lines;
-    int numberOfLines;
-} ParsedFile;
+#include "helper.h"
 
 ParsedFile ParseFile(const char* filename);
 

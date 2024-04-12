@@ -10,8 +10,7 @@
 void assemble(const char* inputFilename) {
     printf("Assembling input file: %s\n", inputFilename);
     ParsedFile parsedFile = ParseFile(inputFilename);
-    printf("Received %d parsed lines from ParseFile\n", parsedFile.numberOfLines);
-    ProcessMacro(inputFilename);
+    ProcessMacro(&parsedFile);
     FirstPass(inputFilename);
     SecondPass(inputFilename);
     CreateOutput(inputFilename);
