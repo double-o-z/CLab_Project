@@ -9,4 +9,5 @@ typedef struct {
 
 void printAllLines(ParsedFile parsedFile);
 char* strDuplicate(const char* str);
+
 #endif /* HELPER_H */

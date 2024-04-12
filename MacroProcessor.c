@@ -1,99 +1,102 @@
 #include "MacroProcessor.h"
-#include "helper.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #define MAX_LINE_LENGTH 256
 
-void ProcessMacro(ParsedFile* parsedFile) {
-    printf("Processing macros for file: %s\n", parsedFile->fileName);
-
-    // Dictionary to store macro definitions
-    // Key: MACRO_NAME, Value: List of macro lines
-    typedef struct {
-        char* macroName;
-        char** macroLines;
-        int lineCount;
-    } MacroDefinition;
-
-    MacroDefinition* macroDefinitions = NULL;
-    int macroCount = 0;
-
-    // Iterate over the lines to find macro definitions
-    for (int i = 0; i < parsedFile->numberOfLines; i++) {
-        char* line = parsedFile->lines[i];
-        if (strstr(line, "mcr ") == line) { // Found a macro definition
-            char* macroNameStart = line + 4; // Skip "mcr "
-            char* macroNameEnd = strchr(macroNameStart, '\n');
-            if (macroNameEnd == NULL) {
-                macroNameEnd = macroNameStart + strlen(macroNameStart);
-            }
-
-            MacroDefinition newMacro;
-            newMacro.macroName = strDuplicate(macroNameStart);
-            newMacro.macroLines = malloc(sizeof(char*) * MAX_LINE_LENGTH);
-            newMacro.lineCount = 0;
-
-            // Copy macro lines until "endmcr"
-            i++; // Move to next line after macro name
-            while (i < parsedFile->numberOfLines && strstr(parsedFile->lines[i], "endmcr") != parsedFile->lines[i]) {
-                newMacro.macroLines[newMacro.lineCount] = strDuplicate(parsedFile->lines[i]);
-                newMacro.lineCount++;
-                i++;
-            }
-
-            // Add new macro definition to dictionary
-            macroCount++;
-            macroDefinitions = realloc(macroDefinitions, sizeof(MacroDefinition) * macroCount);
-            macroDefinitions[macroCount - 1] = newMacro;
+void ensureMacroCapacity(Macro* macro) {
+    if (macro->lineCount >= macro->capacity) {
+        macro->capacity += 5;
+        macro->lines = realloc(macro->lines, sizeof(char*) * macro->capacity);
+        if (macro->lines == NULL) {
+            fprintf(stderr, "Memory allocation failed for macro lines!\n");
+            exit(1);
         }
     }
+}
 
-    // Replace macro calls with macro lines
-    char** updatedLines = malloc(sizeof(char*) * parsedFile->numberOfLines * MAX_LINE_LENGTH);
-    int updatedLinesCount = 0;
+void ensureMacroListCapacity(MacroList* list) {
+    if (list->count >= list->capacity) {
+        list->capacity += 5;
+        list->macros = realloc(list->macros, sizeof(Macro) * list->capacity);
+        if (list->macros == NULL) {
+            fprintf(stderr, "Memory allocation failed for macros list!\n");
+            exit(1);
+        }
+    }
+}
+
+void ProcessMacro(ParsedFile* parsedFile) {
+    MacroList macroList = { .macros = malloc(sizeof(Macro) * 5), .capacity = 5, .count = 0 };
+    char** newLines = malloc(sizeof(char*) * parsedFile->numberOfLines);
+    int newLineCount = 0;
+    char macroName[100];
+    int inMacro = 0;
+
     for (int i = 0; i < parsedFile->numberOfLines; i++) {
         char* line = parsedFile->lines[i];
-        int macroFound = 0;
-        for (int j = 0; j < macroCount; j++) {
-            char* macroName = macroDefinitions[j].macroName;
-            char* macroCall = strstr(line, macroName);
-            if (macroCall != NULL) {
-                // Replace macro call with macro lines
-                for (int k = 0; k < macroDefinitions[j].lineCount; k++) {
-                    updatedLines[updatedLinesCount] = strDuplicate(macroDefinitions[j].macroLines[k]);
-                    updatedLinesCount++;
+
+        // Handling macro definitions
+        if (sscanf(line, "mcr %99s", macroName) == 1) {
+            inMacro = 1;
+            ensureMacroListCapacity(&macroList);
+            Macro* newMacro = &macroList.macros[macroList.count++];
+            newMacro->name = strDuplicate(macroName);
+            newMacro->capacity = 5;
+            newMacro->lines = malloc(sizeof(char*) * newMacro->capacity);
+            newMacro->lineCount = 0;
+            continue;
+        }
+
+        if (strstr(line, "endmcr") && inMacro) {
+            inMacro = 0;
+            continue;
+        }
+
+        if (inMacro) {
+            ensureMacroCapacity(&macroList.macros[macroList.count - 1]);
+            macroList.macros[macroList.count - 1].lines[macroList.macros[macroList.count - 1].lineCount++] = strDuplicate(line);
+            continue;
+        }
+
+        // Expanding macros
+        if (sscanf(line, "%99s", macroName) == 1 && !inMacro) {
+            int found = 0;
+            for (int j = 0; j < macroList.count; j++) {
+                if (strcmp(macroList.macros[j].name, macroName) == 0) {
+                    for (int k = 0; k < macroList.macros[j].lineCount; k++) {
+                        newLines[newLineCount++] = strDuplicate(macroList.macros[j].lines[k]);
+                    }
+                    found = 1;
+                    break;
                 }
-                macroFound = 1;
-                break;
             }
+            if (found) continue;
         }
-        if (!macroFound) {
-            // Copy original line if no macro call was found
-            updatedLines[updatedLinesCount] = strDuplicate(line);
-            updatedLinesCount++;
-        }
-        // Free the original line after processing it
+
+        // Regular lines
+        newLines[newLineCount++] = strDuplicate(line);
+    }
+
+    // Replace old lines with new lines
+    for (int i = 0; i < parsedFile->numberOfLines; i++) {
         free(parsedFile->lines[i]);
     }
-
-    // Free memory allocated for the original lines array
     free(parsedFile->lines);
 
-    // Update parsedFile with the updated lines
-    parsedFile->lines = updatedLines;
-    parsedFile->numberOfLines = updatedLinesCount;
+    parsedFile->lines = newLines;
+    parsedFile->numberOfLines = newLineCount;
 
-    // Free memory allocated for macro definitions
-    for (int i = 0; i < macroCount; i++) {
-        free(macroDefinitions[i].macroName);
-        for (int j = 0; j < macroDefinitions[i].lineCount; j++) {
-            free(macroDefinitions[i].macroLines[j]);
+    // Cleanup
+    for (int i = 0; i < macroList.count; i++) {
+        for (int j = 0; j < macroList.macros[i].lineCount; j++) {
+            free(macroList.macros[i].lines[j]);
         }
-        free(macroDefinitions[i].macroLines);
+        free(macroList.macros[i].lines);
+        free(macroList.macros[i].name);
     }
-    free(macroDefinitions);
+    free(macroList.macros);
 
     printAllLines(*parsedFile);
 }
