@@ -56,30 +56,24 @@ void handleDefineDirective(AssemblerState* state, char* operands, int lineNumber
         fprintf(stderr, "Error in line: %d, invalid .define command: %s\n", lineNumber, fullLine);
         return;
     }
-    printf("bamba define1\n");
     operands = trim(operands);
     char* equalSign = strchr(operands, '=');
     if (!equalSign) {
         fprintf(stderr, "Error in line: %d, invalid .define command: %s\n", lineNumber, fullLine);
         return;
     }
-    printf("bamba define2\n");
     *equalSign = '\0';
     char* name = trim(operands);
     char* valueStr = trim(equalSign + 1);
 
-    printf("bamba define3\n");
     if (!isalpha(name[0]) || !isValidInteger(valueStr)) {
         fprintf(stderr, "Error in line: %d, invalid .define command: %s\n", lineNumber, fullLine);
         return;
     }
 
-    printf("bamba define4\n");
     int value = atoi(valueStr);
     Symbol newSymbol = {strdup(name), MDEFINE, value};
-    printf("bamba define5\n");
     dynamicInsertSymbol(state, newSymbol);
-    printf("bamba define6\n");
 }
 
 // Function to handle the .data directive
@@ -99,7 +93,7 @@ void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, 
         token = trim(token);
         int value;
         if (isValidInteger(token)) {
-            value = atoi(token);
+            value = atoi(token); // Convert to int
         } else {
             value = findSymbolValue(state, token);
             if (value == -1) {
@@ -108,8 +102,9 @@ void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, 
                 continue;
             }
         }
-
+        printf("data.count %d\n", state->data.count);
         dynamicInsert(&state->data, value);
+        printf("data.count %d\n", state->data.count);
         token = strtok(NULL, ",");
     }
 
@@ -131,7 +126,7 @@ void handleStringDirective(AssemblerState* state, char* operands, int lineNumber
 
     operands++;  // Skip the initial double quote
     operands[strlen(operands) - 1] = '\0'; // Remove the closing double quote
-
+    printf("data.count %d\n", state->data.count);
     for (char* character = operands; *character; character++) {
         if ((unsigned char)*character > 127) {
             fprintf(stderr, "Error in line: %d, non-ASCII character found in .string: %s\n", lineNumber, line);
@@ -141,7 +136,7 @@ void handleStringDirective(AssemblerState* state, char* operands, int lineNumber
     }
 
     dynamicInsert(&state->data, 0); // Add terminating zero
-
+    printf("data.count %d\n", state->data.count);
     Symbol newSymbol = {strdup(label), DATA, state->data.count};
     dynamicInsertSymbol(state, newSymbol);
 }

@@ -35,9 +35,11 @@ int findSymbolValue(const AssemblerState* state, const char* label);
 
 void printSymbolsTable(const AssemblerState* state);
 void printDataList(const AssemblerState* state);
+void intToBinaryString(int value, char *buffer);
 
 char** splitFirstWhitespace(char* str);
 char* trim(char* str);
 int isValidInteger(const char* str);
+int to14BitTwosComplement(int value);
 
 #endif /* FIRSTPASSHELPER_H */

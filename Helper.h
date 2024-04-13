@@ -12,6 +12,5 @@ typedef struct {
 } ParsedFile;
 
 void printAllLines(ParsedFile parsedFile);
-void ensureCapacity(void** array, int currentSize, int newSize, size_t elementSize);
 
 #endif /* HELPER_H */

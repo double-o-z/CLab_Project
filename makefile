@@ -7,5 +7,5 @@ assembler: Main.c Assembler.c FileParser.c MacroProcessor.c FirstPass.c SecondPa
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -f assembler
+	rm -f assembler file1.am file2.am file3_noMacro.am
 

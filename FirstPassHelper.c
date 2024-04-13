@@ -106,11 +106,27 @@ void printSymbolsTable(const AssemblerState* state) {
     }
 }
 
+void intToBinaryString(int value, char *buffer) {
+    buffer[14] = '\0'; // Null terminator for the string
+    int pos = 13;
+    // Extract each bit and convert to string
+    for (int i = 0; i < 14; i++) {
+        if (value & (1 << i)) {
+            buffer[pos--] = '1';
+        } else {
+            buffer[pos--] = '0';
+        }
+    }
+}
+
 // Function to print the data list
 void printDataList(const AssemblerState* state) {
     printf("\nData List:\n");
     for (int i = 0; i < state->data.count; i++) {  // Using state->data.count to access the count from DynamicArray
-        printf("%d: %d\n", i, state->data.array[i]);  // Accessing data through state->data.array
+        char binaryString[15]; // 14 bits + null terminator
+        intToBinaryString(state->data.array[i], binaryString);
+        // Accessing data through state->data.array
+        printf("Index %d: Int: %d, Binary: %s\n", i, state->data.array[i], binaryString);
     }
 }
 
@@ -136,4 +152,16 @@ int findSymbolValue(const AssemblerState* state, const char* label) {
         }
     }
     return -1;  // Return -1 if not found, you can handle this case based on your error handling strategy
+}
+
+int to14BitTwosComplement(int value) {
+    // Ensure the value is within the -8192 to 8191 range
+    value = value % 16384; // Modulo 2^14 to wrap around
+
+    // If the value is negative, adjust it to be a valid 14-bit two's complement representation
+    if (value < 0) {
+        value += 16384; // Adjust by 2^14
+    }
+
+    return value & 0x3FFF; // Apply a mask to ensure only the lowest 14 bits are kept
 }
