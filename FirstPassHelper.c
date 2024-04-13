@@ -97,10 +97,12 @@ void printSymbolsTable(const AssemblerState* state) {
     for (int i = 0; i < state->symbolsCount; i++) {
         char* type;
         switch (state->symbols[i].type) {
-            case MDEFINE: type = "MDEFINE"; break;
-            case CODE: type = "CODE"; break;
-            case DATA: type = "DATA"; break;
-            default: type = "UNKNOWN"; break;
+            case MDEFINE: type = "mdefine"; break;
+            case CODE: type = "code"; break;
+            case DATA: type = "data"; break;
+            case EXTERNAL: type = "extern"; break;
+            case ENTRY: type = "entry"; break;
+            default: type = "unknown"; break;
         }
         printf("%s\t%s\t%d\n", state->symbols[i].label, type, state->symbols[i].value);
     }

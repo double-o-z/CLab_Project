@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include "Helper.h"
 
-typedef enum { MDEFINE, CODE, DATA } SymbolType;
+typedef enum { MDEFINE, CODE, DATA, EXTERNAL, ENTRY } SymbolType;
 
 typedef struct {
     char* label;

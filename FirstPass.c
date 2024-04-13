@@ -45,6 +45,8 @@ void processLine(AssemblerState* state, char* line, int lineNumber) {
         handleDataDirective(state, operands, lineNumber, line, label);
     } else if (strcmp(command, ".string") == 0) {
         handleStringDirective(state, operands, lineNumber, line, label);
+    } else if (strcmp(command, ".extern") == 0) {
+        handleExternalDirective(state, operands, lineNumber, line);
     }
 
     free(parts);  // Free parts array after use
@@ -109,6 +111,34 @@ void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, 
 
     Symbol newSymbol = {strdup(label), DATA, countBeforeInsert};
     dynamicInsertSymbol(state, newSymbol);
+}
+
+// Function to handle the .data directive
+void handleExternalDirective(AssemblerState* state, char* operands, int lineNumber, const char* line) {
+    if (!operands) {
+        fprintf(stderr, "Error in line: %d, invalid .extern command, no data provided: %s\n", lineNumber, line);
+        return;
+    }
+
+    char* token = strtok(operands, ",");
+    while (token) {
+        token = trim(token);
+        int value;
+        if (isValidInteger(token)) {
+            value = atoi(token); // Convert to int
+        } else {
+            value = findSymbolValue(state, token);
+            if (value != -1) {
+                fprintf(stderr, "Error in line: %d, invalid operand for .extern command, "
+                                "it is already defined: %s\n", lineNumber, token);
+                token = strtok(NULL, ",");
+                continue;
+            }
+        }
+        Symbol newSymbol = {strdup(token), EXTERNAL, 0};
+        dynamicInsertSymbol(state, newSymbol);
+        token = strtok(NULL, ",");
+    }
 }
 
 // Function to handle the .string directive
