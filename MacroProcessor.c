@@ -64,7 +64,7 @@ void ProcessMacro(ParsedFile* parsedFile) {
             macrosExist = 1;
             ensureMacroListCapacity(&macroList);
             Macro* newMacro = &macroList.macros[macroList.count++];
-            newMacro->name = strDuplicate(macroName);
+            newMacro->name = strdup(macroName);
             newMacro->capacity = INITIAL_MACRO_CAPACITY;
             newMacro->lines = malloc(sizeof(char*) * newMacro->capacity);
             newMacro->lineCount = 0;
@@ -78,7 +78,7 @@ void ProcessMacro(ParsedFile* parsedFile) {
 
         if (inMacro) {
             ensureMacroCapacity(&macroList.macros[macroList.count - 1]);
-            macroList.macros[macroList.count - 1].lines[macroList.macros[macroList.count - 1].lineCount++] = strDuplicate(line);
+            macroList.macros[macroList.count - 1].lines[macroList.macros[macroList.count - 1].lineCount++] = strdup(line);
             continue;
         }
 
@@ -87,7 +87,7 @@ void ProcessMacro(ParsedFile* parsedFile) {
             for (int j = 0; j < macroList.count; j++) {
                 if (strcmp(macroList.macros[j].name, macroName) == 0) {
                     for (int k = 0; k < macroList.macros[j].lineCount; k++) {
-                        newLines[newLineCount++] = strDuplicate(macroList.macros[j].lines[k]);
+                        newLines[newLineCount++] = strdup(macroList.macros[j].lines[k]);
                     }
                     found = 1;
                     break;
@@ -96,7 +96,7 @@ void ProcessMacro(ParsedFile* parsedFile) {
             if (found) continue;
         }
 
-        newLines[newLineCount++] = strDuplicate(line);
+        newLines[newLineCount++] = strdup(line);
     }
 
     // Replace old lines with new lines

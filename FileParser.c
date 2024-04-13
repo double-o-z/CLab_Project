@@ -1,10 +1,5 @@
 // FileParser.c
 #include "FileParser.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
 #define INITIAL_CAPACITY 10
 #define CAPACITY_INCREMENT 10
 
@@ -110,7 +105,7 @@ ParsedFile ParseFile(const char* filename) {
         }
 
         // Store the trimmed line in the list
-        lines[size] = strDuplicate(trimmedLine);
+        lines[size] = strdup(trimmedLine);
         size++;
     }
 
@@ -120,6 +115,6 @@ ParsedFile ParseFile(const char* filename) {
     parsedFile.lines = lines;
     parsedFile.numberOfLines = size;
 
-    printAllLines(parsedFile);
+    // printAllLines(parsedFile);
     return parsedFile;
 }

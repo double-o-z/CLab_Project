@@ -1,17 +1,5 @@
 #include "FirstPassHelper.h"
 
-// Helper function to ensure capacity for dynamic arrays
-void ensureCapacity(void** array, int currentSize, int newSize, size_t elementSize) {
-    if (currentSize >= newSize) {
-        newSize += 10;
-        *array = realloc(*array, newSize * elementSize);
-        if (*array == NULL) {
-            fprintf(stderr, "Memory allocation failed!\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-}
-
 // Initialize assembler state
 AssemblerState initAssemblerState() {
     AssemblerState state;
@@ -41,8 +29,27 @@ char** splitFirstWhitespace(char* str) {
     return parts;
 }
 
+// Helper function to trim whitespaces and tabs
+char* trim(char* str) {
+    char* end;
+
+    // Trim leading space
+    while (isspace((unsigned char)*str)) str++;
+
+    if (*str == 0)  // All spaces?
+        return str;
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+
+    // Write new null terminator character
+    end[1] = '\0';
+    return str;
+}
+
 // Process a line to determine its type and handle labels
-void processLine(AssemblerState* state, char* line) {
+void processLine(AssemblerState* state, char* line, int lineNumber) {
     char** parts = splitFirstWhitespace(line);
     char* label = NULL;
     char* command = parts[0];
@@ -62,6 +69,137 @@ void processLine(AssemblerState* state, char* line) {
 
     // Handle command type determination here (to be implemented)
     // For example, determine if it's a data directive or an instruction
+    // Handle .define directive
+    if (strcmp(command, ".define") == 0) {
+        handleDefineDirective(state, operands, lineNumber, line);
+    } else if (strcmp(command, ".data") == 0) {
+        handleDataDirective(state, operands, lineNumber, line, label);
+    }
 
     free(parts);  // Free parts array after use
+}
+
+// Function to handle the .define directive
+void handleDefineDirective(AssemblerState* state, char* operands, int lineNumber, const char* fullLine) {
+    if (!operands) {
+        fprintf(stderr, "Error in line: %d, invalid .define command: %s\n", lineNumber, fullLine);
+        return;
+    }
+
+    // Trim and split by '='
+    operands = trim(operands);
+    char* equalSign = strchr(operands, '=');
+    if (!equalSign) {
+        fprintf(stderr, "Error in line: %d, invalid .define command: %s\n", lineNumber, fullLine);
+        return;
+    }
+    *equalSign = '\0';
+    char* name = trim(operands);
+    char* valueStr = trim(equalSign + 1);
+
+    // Validate name and value
+    if (!isalpha(name[0]) || !isdigit(valueStr[0])) {
+        fprintf(stderr, "Error in line: %d, invalid .define command: %s\n", lineNumber, fullLine);
+        return;
+    }
+
+    // Convert value to integer
+    int value = atoi(valueStr);
+
+    // Add to symbols table
+    ensureCapacity((void**)&state->symbols, state->symbolsCount, state->symbolsCapacity, sizeof(Symbol));
+    Symbol newSymbol = {strdup(name), MDEFINE, value};
+    state->symbols[state->symbolsCount++] = newSymbol;
+}
+
+// Helper function to check if a string is a valid integer
+int isValidInteger(const char* str) {
+    if (*str == '+' || *str == '-')  // Skip the sign if present
+        str++;
+    if (*str == '\0')  // String is only a sign
+        return 0;
+    while (*str) {
+        if (!isdigit(*str))
+            return 0;
+        str++;
+    }
+    return 1;
+}
+
+// Helper function to find a symbol in the symbol table and return its value
+int findSymbolValue(const AssemblerState* state, const char* label) {
+    for (int i = 0; i < state->symbolsCount; i++) {
+        if (strcmp(state->symbols[i].label, label) == 0 && state->symbols[i].type == MDEFINE) {
+            return state->symbols[i].value;
+        }
+    }
+    return -1;  // Return -1 if not found, you can handle this case based on your error handling strategy
+}
+
+// Function to handle the .data directive
+void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, const char* line, const char* label) {
+    if (!label || label[0] == '\0') {
+        fprintf(stderr, "Error in line: %d, .data command requires a label: %s\n", lineNumber, line);
+        return;
+    }
+
+    if (!operands) {
+        fprintf(stderr, "Error in line: %d, invalid .data command, no data provided: %s\n", lineNumber, line);
+        return;
+    }
+
+    // Split the operands by commas to extract individual values
+    char* token = strtok(operands, ",");
+    int index = state->dataCount;  // Start index in data array for this label
+
+    while (token) {
+        token = trim(token);  // Trim whitespace around the number or label
+
+        int value;
+        if (isValidInteger(token)) {
+            value = atoi(token);  // Convert token to integer if it's a valid number
+        } else {
+            value = findSymbolValue(state, token);  // Look up the symbol in the symbol table
+            if (value == -1) {  // Handle undefined symbols or invalid integers
+                fprintf(stderr, "Error in line: %d, invalid operand or undefined symbol used in .data: %s\n", lineNumber, token);
+                token = strtok(NULL, ",");  // Continue to next token despite error
+                continue;
+            }
+        }
+
+        // Ensure the data array has enough capacity
+        ensureCapacity((void**)&state->data, state->dataCount, state->dataCapacity, sizeof(int));
+        state->data[state->dataCount++] = value;  // Store the integer or resolved symbol value in the data array
+
+        token = strtok(NULL, ",");  // Move to the next token
+    }
+
+    // Add to symbols table
+    ensureCapacity((void**)&state->symbols, state->symbolsCount, state->symbolsCapacity, sizeof(Symbol));
+    Symbol newSymbol = {strdup(label), DATA, index};
+    state->symbols[state->symbolsCount++] = newSymbol;
+}
+
+// Function to print the symbols table
+void printSymbolsTable(const AssemblerState* state) {
+    printf("\nSymbols Table:\n");
+    printf("Label\tType\tValue\n");
+    for (int i = 0; i < state->symbolsCount; i++) {
+        char* type;
+        switch (state->symbols[i].type) {
+            case MDEFINE: type = "MDEFINE"; break;
+            case CODE: type = "CODE"; break;
+            case DATA: type = "DATA"; break;
+            default: type = "UNKNOWN"; break;
+        }
+        printf("%s\t%s\t%d\n", state->symbols[i].label, type, state->symbols[i].value);
+    }
+}
+
+// Function to print the data list
+void printDataList(const AssemblerState* state) {
+    printf("\nData List:\n");
+    for (int i = 0; i < state->dataCount; i++) {
+        printf("%d: %d\n", i, state->data[i]);
+    }
 }

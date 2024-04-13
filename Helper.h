@@ -1,6 +1,9 @@
 #ifndef HELPER_H
 #define HELPER_H
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     char** lines;
@@ -9,7 +12,6 @@ typedef struct {
 } ParsedFile;
 
 void printAllLines(ParsedFile parsedFile);
-char* strDuplicate(const char* str);
 void ensureCapacity(void** array, int currentSize, int newSize, size_t elementSize);
 
 #endif /* HELPER_H */
