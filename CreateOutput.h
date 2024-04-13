@@ -1,7 +1,7 @@
 // CreateOutput.h
 #ifndef CREATEOUTPUT_H
 #define CREATEOUTPUT_H
-#include "helper.h"
+#include "Helper.h"
 
 void CreateOutput(ParsedFile* parsedFile);
 

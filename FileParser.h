@@ -1,6 +1,6 @@
 #ifndef PARSE_FILE_H
 #define PARSE_FILE_H
-#include "helper.h"
+#include "Helper.h"
 #define MAX_LINE_LENGTH 256
 
 ParsedFile ParseFile(const char* filename);

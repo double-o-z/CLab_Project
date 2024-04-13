@@ -1,7 +1,7 @@
 // MacroProcessor.h
 #ifndef MACROPROCESSOR_H
 #define MACROPROCESSOR_H
-#include "helper.h"
+#include "Helper.h"
 
 #define INITIAL_MACRO_CAPACITY 5
 #define INCREMENTAL_MACRO_CAPACITY 5

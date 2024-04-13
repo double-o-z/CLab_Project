@@ -1,7 +1,7 @@
 // SecondPass.h
 #ifndef SECONDPASS_H
 #define SECONDPASS_H
-#include "helper.h"
+#include "Helper.h"
 
 void SecondPass(ParsedFile* parsedFile);
 

@@ -10,5 +10,6 @@ typedef struct {
 
 void printAllLines(ParsedFile parsedFile);
 char* strDuplicate(const char* str);
+void ensureCapacity(void** array, int currentSize, int newSize, size_t elementSize);
 
 #endif /* HELPER_H */
