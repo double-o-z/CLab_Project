@@ -88,6 +88,7 @@ void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, 
         return;
     }
 
+    int countBeforeInsert = state->data.count;
     char* token = strtok(operands, ",");
     while (token) {
         token = trim(token);
@@ -102,13 +103,11 @@ void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, 
                 continue;
             }
         }
-        printf("data.count %d\n", state->data.count);
         dynamicInsert(&state->data, value);
-        printf("data.count %d\n", state->data.count);
         token = strtok(NULL, ",");
     }
 
-    Symbol newSymbol = {strdup(label), DATA, state->data.count};
+    Symbol newSymbol = {strdup(label), DATA, countBeforeInsert};
     dynamicInsertSymbol(state, newSymbol);
 }
 
@@ -123,10 +122,9 @@ void handleStringDirective(AssemblerState* state, char* operands, int lineNumber
         fprintf(stderr, "Error in line: %d, invalid .string command, string must be enclosed in double quotes: %s\n", lineNumber, line);
         return;
     }
-
+    int countBeforeInsert = state->data.count;
     operands++;  // Skip the initial double quote
     operands[strlen(operands) - 1] = '\0'; // Remove the closing double quote
-    printf("data.count %d\n", state->data.count);
     for (char* character = operands; *character; character++) {
         if ((unsigned char)*character > 127) {
             fprintf(stderr, "Error in line: %d, non-ASCII character found in .string: %s\n", lineNumber, line);
@@ -136,7 +134,6 @@ void handleStringDirective(AssemblerState* state, char* operands, int lineNumber
     }
 
     dynamicInsert(&state->data, 0); // Add terminating zero
-    printf("data.count %d\n", state->data.count);
-    Symbol newSymbol = {strdup(label), DATA, state->data.count};
+    Symbol newSymbol = {strdup(label), DATA, countBeforeInsert};
     dynamicInsertSymbol(state, newSymbol);
 }
