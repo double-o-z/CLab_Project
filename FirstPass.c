@@ -13,5 +13,8 @@ void FirstPass(ParsedFile* parsedFile) {
     printSymbolsTable(&state);
     printDataList(&state);
 
-    // Further processing, error checks, etc. (to be implemented)
+    // Check for unresolved instructions and handle them
+    finalCheck(&state);
+
+    // Cleanup if necessary (e.g., free memory)
 }

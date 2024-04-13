@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "Helper.h"
+#include "Opcodes.h"
 
 typedef enum { MDEFINE, CODE, DATA } SymbolType;
 
@@ -16,6 +17,12 @@ typedef struct {
 } Symbol;
 
 typedef struct {
+    int instructionIndex;  // Index of the instruction in the instruction list
+    int lineNumber;        // Line number of the instruction for error reporting
+    char* line;            // Copy of the original line for reference
+} UnresolvedInstruction;
+
+typedef struct {
     int* instructions;
     int instructionCount;
     int* data;
@@ -24,9 +31,11 @@ typedef struct {
     Symbol* symbols;
     int symbolsCapacity;
     int symbolsCount;
+    UnresolvedInstruction* unresolved;
+    int unresolvedCount;
+    int unresolvedCapacity;
 } AssemblerState;
 
-void ensureCapacity(void** array, int currentSize, int newSize, size_t elementSize);
 AssemblerState initAssemblerState();
 char** splitFirstWhitespace(char* str);
 void processLine(AssemblerState* state, char* line, int lineNumber);
@@ -38,5 +47,14 @@ void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, 
 void printSymbolsTable(const AssemblerState* state);
 void printDataList(const AssemblerState* state);
 void handleStringDirective(AssemblerState* state, char* operands, int lineNumber, const char* line, const char* label);
-
+int resolveRegister(const char* operand);
+int getOperandValue(AssemblerState* state, const char* operand);
+int resolveOperand(AssemblerState* state, char* operand, int* resolvedValue);
+void insertWords(AssemblerState* state, Opcode* cmd, int srcType, int srcValue, int dstType, int dstValue);
+void addUnresolved(AssemblerState* state, int instructionIndex, int lineNumber, char* line);
+void finalCheck(AssemblerState* state);
+Opcode* findOpcode(const char* command);
+void processInstruction(AssemblerState* state, char* command, char* operands, int lineNumber);
+void addSymbolAndUpdateUnresolved(AssemblerState* state, Symbol newSymbol);
+int resolveInstruction(AssemblerState* state, UnresolvedInstruction* unresolved);
 #endif /* FIRSTPASSHELPER_H */

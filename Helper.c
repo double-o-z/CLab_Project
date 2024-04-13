@@ -9,13 +9,15 @@ void printAllLines(ParsedFile parsedFile) {
 }
 
 // Helper function to ensure capacity for dynamic arrays
-void ensureCapacity(void** array, int currentSize, int newSize, size_t elementSize) {
-    if (currentSize >= newSize) {
-        newSize += 10;
-        *array = realloc(*array, newSize * elementSize);
-        if (*array == NULL) {
+void ensureCapacity(void** array, int* currentCapacity, int requiredSize, size_t elementSize) {
+    if (*currentCapacity < requiredSize) {
+        int newCapacity = requiredSize + 10;  // Increase capacity beyond the required size to reduce the number of reallocations
+        void* newArray = realloc(*array, newCapacity * elementSize);
+        if (newArray == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
             exit(EXIT_FAILURE);
         }
+        *array = newArray;
+        *currentCapacity = newCapacity;  // Update the capacity variable
     }
 }

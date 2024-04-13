@@ -2,11 +2,20 @@
 #ifndef OPCODES_H
 #define OPCODES_H
 
-typedef enum {
-    MOV = 0, CMP, ADD, SUB, NOT, CLR, LEA, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, HLT
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char* name;           // Opcode name
+    int opcode;           // Opcode value
+    char* sourceTypes;    // Valid source operand types
+    char* destTypes;      // Valid destination operand types
 } Opcode;
 
-extern const char* OpcodeCommands[];
+#define OPCODE_COUNT 16  // Total number of opcodes
+
+extern Opcode opcodes[]; // Declaration only
 
 #endif
 
