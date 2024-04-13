@@ -74,6 +74,8 @@ void processLine(AssemblerState* state, char* line, int lineNumber) {
         handleDefineDirective(state, operands, lineNumber, line);
     } else if (strcmp(command, ".data") == 0) {
         handleDataDirective(state, operands, lineNumber, line, label);
+    } else if (strcmp(command, ".string") == 0) {
+        handleStringDirective(state, operands, lineNumber, line, label);
     }
 
     free(parts);  // Free parts array after use
@@ -202,4 +204,44 @@ void printDataList(const AssemblerState* state) {
     for (int i = 0; i < state->dataCount; i++) {
         printf("%d: %d\n", i, state->data[i]);
     }
+}
+
+// Function to handle the .string directive
+void handleStringDirective(AssemblerState* state, char* operands, int lineNumber, const char* line, const char* label) {
+    if (!label || label[0] == '\0') {
+        fprintf(stderr, "Error in line: %d, .string command requires a label: %s\n", lineNumber, line);
+        return;
+    }
+
+    if (!operands || operands[0] != '"' || operands[strlen(operands) - 1] != '"') {
+        fprintf(stderr, "Error in line: %d, invalid .string command, string must be enclosed in double quotes: %s\n", lineNumber, line);
+        return;
+    }
+
+    // Remove the enclosing double quotes
+    operands[strlen(operands) - 1] = '\0';
+    operands++;  // Move past the initial double quote
+
+    // Check that all characters are ASCII and copy each character's ASCII value to the data list
+    char* character = operands;
+    int index = state->dataCount;  // Start index in data array for this label
+
+    while (*character) {
+        if ((unsigned char)*character > 127) {
+            fprintf(stderr, "Error in line: %d, non-ASCII character found in .string: %s\n", lineNumber, line);
+            return;
+        }
+        ensureCapacity((void**)&state->data, state->dataCount, state->dataCapacity, sizeof(int));
+        state->data[state->dataCount++] = (int)*character;  // Store the ASCII value of the character
+        character++;
+    }
+
+    // Add the terminating zero to follow the C string convention in the data list
+    ensureCapacity((void**)&state->data, state->dataCount, state->dataCapacity, sizeof(int));
+    state->data[state->dataCount++] = 0;
+
+    // Add to symbols table
+    ensureCapacity((void**)&state->symbols, state->symbolsCount, state->symbolsCapacity, sizeof(Symbol));
+    Symbol newSymbol = {strdup(label), DATA, index};
+    state->symbols[state->symbolsCount++] = newSymbol;
 }

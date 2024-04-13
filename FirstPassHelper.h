@@ -37,5 +37,6 @@ int findSymbolValue(const AssemblerState* state, const char* label);
 void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, const char* line, const char* label);
 void printSymbolsTable(const AssemblerState* state);
 void printDataList(const AssemblerState* state);
+void handleStringDirective(AssemblerState* state, char* operands, int lineNumber, const char* line, const char* label);
 
 #endif /* FIRSTPASSHELPER_H */
