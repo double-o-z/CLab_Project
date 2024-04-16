@@ -9,9 +9,16 @@ void FirstPass(ParsedFile* parsedFile, AssemblerState* state) {
         processLine(state, parsedFile->lines[i], i + 1);
     }
 
+    // Increase Data count by instructions count
+    state->data.count += state->instructions.count;
+    for (int i = 0; i < state->symbolsCount; ++i) {
+        if (state->symbols[i].type == DATA){
+            state->symbols[i].value += state->instructions.count;
+        }
+    }
     // Call helper functions to print symbols table and data list
-    printSymbolsTable(state);
     printDataList(state);
+    printSymbolsTable(state);
     printInstructionsList(state);
 }
 

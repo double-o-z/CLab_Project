@@ -1,5 +1,7 @@
 #include "Helper.h"
 
+const int INDEX_FIRST_INSTRUCTION = 100;
+
 void printAllLines(ParsedFile parsedFile) {
     printf("parsedFile contains %d lines:\n\n", parsedFile.numberOfLines);
     for (int i = 0; i < parsedFile.numberOfLines; i++) {
@@ -11,7 +13,7 @@ void printAllLines(ParsedFile parsedFile) {
 AssemblerState initAssemblerState() {
     AssemblerState state;
     state.instructions.array = NULL;  // No initial allocation
-    state.instructions.count = 0;     // IC initialized to 0
+    state.instructions.count = INDEX_FIRST_INSTRUCTION;     // IC initialized to 0
     state.data.array = NULL;           // No initial allocation
     state.data.count = 0;              // DC initialized to 0
     state.symbols = NULL;              // No initial allocation

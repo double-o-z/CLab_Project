@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+extern const int INDEX_FIRST_INSTRUCTION;
+
 typedef struct {
     char** lines;
     int numberOfLines;
