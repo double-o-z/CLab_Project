@@ -1,40 +1,15 @@
 #include "FirstPassHelper.h"
 
-// Initialize assembler state
-AssemblerState initAssemblerState() {
-    AssemblerState state;
-    state.instructions.array = NULL;  // No initial allocation
-    state.instructions.count = 0;     // IC initialized to 0
-    state.data.array = NULL;           // No initial allocation
-    state.data.count = 0;              // DC initialized to 0
-    state.symbols = NULL;              // No initial allocation
-    state.symbolsCount = 0;            // Symbols count initialized to 0
-    return state;
-}
-
-void dynamicInsert(DynamicArray* array, int value) {
-    // Check if initialization is needed
-    if (array->count == 0 || array->array == NULL) {
-        array->array = malloc(sizeof(int));  // Allocate space for the first element
-        if (array->array == NULL) {
-            fprintf(stderr, "Memory allocation failed!\n");
-            exit(EXIT_FAILURE);
+void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
+    // Check for existing symbol
+    for (int i = 0; i < state->symbolsCount; i++) {
+        if (strcmp(state->symbols[i].label, newSymbol.label) == 0) {
+            fprintf(stderr, "Error: Duplicate symbol '%s' found.\n", newSymbol.label);
+            state->duplicateSymbols = true;
+            return;  // Do not add the duplicate symbol, return immediately
         }
-    } else {
-        // Resize the array dynamically
-        int* temp = realloc(array->array, (array->count + 1) * sizeof(int));
-        if (temp == NULL) {
-            fprintf(stderr, "Memory allocation failed during resizing!\n");
-            exit(EXIT_FAILURE);
-        }
-        array->array = temp;
     }
 
-    // Insert the new value
-    array->array[array->count++] = value;
-}
-
-void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
     // Check if initialization is needed
     if (state->symbolsCount == 0 || state->symbols == NULL) {
         state->symbols = malloc(sizeof(Symbol));  // Allocate space for the first symbol
@@ -88,24 +63,6 @@ char* trim(char* str) {
     // Write new null terminator character
     end[1] = '\0';
     return str;
-}
-
-// Function to print the symbols table
-void printSymbolsTable(const AssemblerState* state) {
-    printf("\nSymbols Table:\n");
-    printf("Label\tType\tValue\n");
-    for (int i = 0; i < state->symbolsCount; i++) {
-        char* type;
-        switch (state->symbols[i].type) {
-            case MDEFINE: type = "mdefine"; break;
-            case CODE: type = "code"; break;
-            case DATA: type = "data"; break;
-            case EXTERNAL: type = "extern"; break;
-            case ENTRY: type = "entry"; break;
-            default: type = "unknown"; break;
-        }
-        printf("%s\t%s\t%d\n", state->symbols[i].label, type, state->symbols[i].value);
-    }
 }
 
 void intToBinaryString(int value, char *buffer) {

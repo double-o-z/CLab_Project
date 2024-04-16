@@ -5,31 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include "Helper.h"
 
-typedef enum { MDEFINE, CODE, DATA, EXTERNAL, ENTRY } SymbolType;
-
-typedef struct {
-    char* label;
-    SymbolType type;
-    int value;
-} Symbol;
-
-typedef struct {
-    int* array;     // Array of data or instructions
-    int count;      // Counter for number of elements (DC or IC)
-} DynamicArray;
-
-typedef struct {
-    DynamicArray instructions;  // Instructions array with IC
-    DynamicArray data;          // Data array with DC
-    Symbol* symbols;            // Symbol table
-    int symbolsCapacity;        // Capacity of the symbol table
-    int symbolsCount;           // Number of symbols currently stored
-} AssemblerState;
-
-AssemblerState initAssemblerState();
-void dynamicInsert(DynamicArray* array, int value);
 void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol);
 int findSymbolValue(const AssemblerState* state, const char* label);
 

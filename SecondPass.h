@@ -3,7 +3,7 @@
 #define SECONDPASS_H
 #include "Helper.h"
 
-void SecondPass(ParsedFile* parsedFile);
+void SecondPass(ParsedFile* parsedFile, AssemblerState* state);
 
 #endif
 
