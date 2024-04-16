@@ -4,6 +4,7 @@
 MAIN:   mov r3, LIST[sz]
 LOOP:   jmp L1
 mcr m_mcr
+.entry END
 cmp r3, #sz
 bne END
 endmcr

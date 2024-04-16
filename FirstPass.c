@@ -47,6 +47,8 @@ void processLine(AssemblerState* state, char* line, int lineNumber) {
         handleStringDirective(state, operands, lineNumber, line, label);
     } else if (strcmp(command, ".extern") == 0) {
         handleExternalDirective(state, operands, lineNumber, line);
+    } else if (strcmp(command, ".entry") == 0) {
+        printf("Found entry, do nothing.\n");
     } else {
         // If it's not a directive, treat it as an instruction
         handleInstructions(state, label, command, operands, lineNumber);

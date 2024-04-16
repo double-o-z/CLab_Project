@@ -12,7 +12,7 @@ void Assemble(const char* inputFilename) {
     printf("Assembling input file: %s\n", inputFilename);
     ParsedFile parsedFile = ParseFile(inputFilename);
     AssemblerState state = initAssemblerState();
-    ProcessMacro(&parsedFile);
+    ProcessMacro(&parsedFile); // TODO: trim all whitespace and tabs after process macro, for file.am?
     FirstPass(&parsedFile, &state);
     SecondPass(&parsedFile, &state);
     CreateOutput(&parsedFile);
