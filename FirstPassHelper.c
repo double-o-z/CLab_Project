@@ -167,3 +167,62 @@ int to14BitTwosComplement(int value) {
 
     return value & 0x3FFF; // Apply a mask to ensure only the lowest 14 bits are kept
 }
+
+int createFirstWord(int srcType, int destType, int opcode) {
+    int firstWord = 0;
+    firstWord |= (srcType & 0x3) << 4;  // Source type in bits 4-5
+    firstWord |= (destType & 0x3) << 2; // Destination type in bits 2-3
+    firstWord |= (opcode & 0xF);        // Opcode in bits 6-9
+
+    return firstWord;
+}
+
+void addInstructionToInstructionList(DynamicArray* array, int instructionWord) {
+    // Check if the instructions array needs to be initialized
+    if (array->count == 0 || array->array == NULL) {
+        array->array = malloc(sizeof(int));  // Allocate space for the first instruction
+        if (array->array == NULL) {
+            fprintf(stderr, "Memory allocation failed!\n");
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        // Resize the instructions array dynamically
+        int* temp = realloc(array->array, (array->count + 1) * sizeof(int));
+        if (temp == NULL) {
+            fprintf(stderr, "Memory allocation failed during resizing!\n");
+            exit(EXIT_FAILURE);
+        }
+        array->array = temp;
+    }
+
+    // Add the new instruction to the array
+    array->array[array->count++] = instructionWord;
+}
+
+void prepareOperandDataWords(AssemblerState* state, int srcType, int destType) {
+    int additionalWords = 0;
+
+    // Determine the number of words needed for source operand
+    if (srcType == 2) { // Direct index
+        additionalWords += 2; // Two words: one for the symbol address and one for the index value
+    } else if (srcType == 0 || srcType == 1 || srcType == 3) { // Immediate, Direct, Register
+        additionalWords += 1;
+    }
+
+    // Determine the number of words needed for destination operand
+    if (destType == 2) { // Direct index
+        additionalWords += 2; // Two words: one for the symbol address and one for the index value
+    } else if (destType == 0 || destType == 1 || destType == 3) { // Immediate, Direct, Register
+        additionalWords += 1;
+    }
+
+    // Special case: if both operands are registers, consolidate into a single word
+    if (srcType == 3 && destType == 3) {
+        additionalWords = 1; // Only one word needed because register indices are packed into a single word
+    }
+
+    // Add the calculated number of additional words to the instruction list as placeholders (0)
+    for (int i = 0; i < additionalWords; i++) {
+        addInstructionToInstructionList(&state->instructions, 0); // Placeholder value 0
+    }
+}

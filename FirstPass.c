@@ -47,9 +47,38 @@ void processLine(AssemblerState* state, char* line, int lineNumber) {
         handleStringDirective(state, operands, lineNumber, line, label);
     } else if (strcmp(command, ".extern") == 0) {
         handleExternalDirective(state, operands, lineNumber, line);
+    } else {
+        // If it's not a directive, treat it as an instruction
+        handleInstructions(state, label, command, operands, lineNumber);
     }
 
     free(parts);  // Free parts array after use
+}
+
+void handleInstructions(AssemblerState* state, char* label, char* command, char* operands, int lineNumber) {
+    // If a label is present, add it to the symbol table with the current instruction count (IC)
+    if (label) {
+        Symbol newSymbol = {strdup(label), CODE, state->instructions.count};
+        dynamicInsertSymbol(state, newSymbol);
+    }
+    // Find opcode index based on the command
+    int opcodeIndex = findOpcodeIndex(command);  // Assuming this function exists
+    if (opcodeIndex == -1) {
+        printf("Error on line %d: Unknown command '%s'\n", lineNumber, command);
+        return;
+    }
+    // Validate and parse operands
+    int srcType = -1, destType = -1;
+    if (!parseOperands(&srcType, &destType, operands, opcodes[opcodeIndex])) {
+        printf("Error on line %d: Invalid operands for '%s'\n", lineNumber, command);
+        return;
+    }
+    // Create the first word of the instruction
+    int firstWord = createFirstWord(srcType, destType, opcodes[opcodeIndex].opcode);
+    addInstructionToInstructionList(&state->instructions, firstWord);
+
+    // Prepare for additional words that describe operand data (handled during the second pass)
+    prepareOperandDataWords(state, srcType, destType);
 }
 
 // Function to handle the .define directive

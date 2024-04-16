@@ -41,5 +41,8 @@ char** splitFirstWhitespace(char* str);
 char* trim(char* str);
 int isValidInteger(const char* str);
 int to14BitTwosComplement(int value);
+int createFirstWord(int srcType, int destType, int opcode);
+void addInstructionToInstructionList(DynamicArray* array, int instructionWord);
+void prepareOperandDataWords(AssemblerState* state, int srcType, int destType);
 
 #endif /* FIRSTPASSHELPER_H */

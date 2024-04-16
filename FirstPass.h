@@ -2,6 +2,7 @@
 #ifndef FIRSTPASS_H
 #define FIRSTPASS_H
 #include "Helper.h"
+#include "Opcodes.h"
 #include "FirstPassHelper.h"
 
 void FirstPass(ParsedFile* parsedFile);
@@ -10,6 +11,6 @@ void handleDefineDirective(AssemblerState* state, char* operands, int lineNumber
 void handleDataDirective(AssemblerState* state, char* operands, int lineNumber, const char* line, const char* label);
 void handleStringDirective(AssemblerState* state, char* operands, int lineNumber, const char* line, const char* label);
 void handleExternalDirective(AssemblerState* state, char* operands, int lineNumber, const char* line);
+void handleInstructions(AssemblerState* state, char* label, char* command, char* operands, int lineNumber);
 
 #endif
-
