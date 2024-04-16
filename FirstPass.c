@@ -18,6 +18,7 @@ void FirstPass(ParsedFile* parsedFile) {
 
 // Process a line to determine its type and handle labels
 void processLine(AssemblerState* state, char* line, int lineNumber) {
+    printf("%s\n", line);
     char** parts = splitFirstWhitespace(line);
     char* label = NULL;
     char* command = parts[0];
@@ -35,7 +36,7 @@ void processLine(AssemblerState* state, char* line, int lineNumber) {
         }
     }
 
-    printf("bamba %s\n", line);
+    printf("handling command %s, operands: %s\n", command, operands);
     // Handle command type determination here (to be implemented)
     // For example, determine if it's a data directive or an instruction
     // Handle .define directive
@@ -75,6 +76,7 @@ void handleInstructions(AssemblerState* state, char* label, char* command, char*
     }
     // Create the first word of the instruction
     int firstWord = createFirstWord(srcType, destType, opcodes[opcodeIndex].opcode);
+    printf("adding first instruction word with value: %d\n", firstWord);
     addInstructionToInstructionList(&state->instructions, firstWord);
 
     // Prepare for additional words that describe operand data (handled during the second pass)

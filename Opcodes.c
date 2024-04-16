@@ -49,8 +49,6 @@ void initOperandTypes(int *types, int num, ...) {
 
 bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opcode) {
     char operandStr[100]; // Buffer to hold a copy of operands
-
-    // Safely copy operands into operandStr or handle NULL
     if (operands != NULL) {
         strncpy(operandStr, operands, sizeof(operandStr) - 1);
         operandStr[sizeof(operandStr) - 1] = '\0';  // Ensure null termination
@@ -58,27 +56,30 @@ bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opc
         operandStr[0] = '\0';  // Set to empty string if operands are NULL
     }
 
-    // If no operands, both types are set to -1 (assuming no operands are expected)
-    if (operandStr[0] == '\0') {
-        *srcType = -1;
-        *destType = -1;
-        return true;  // Return true if the command expects no operands, otherwise handle it as needed
-    }
-
     char* token = strtok(operandStr, ",");
     *srcType = -1;
     *destType = -1;
     int pos = 0;
 
+    // Track the number of operands processed
+    int numOperands = 0;
+
     while (token != NULL) {
         int type = determineOperandType(token);
-        if (pos == 0 && opcode.sourceTypes[0] != -1) {
-            *srcType = type;
-        } else if (pos == 1 && opcode.destTypes[0] != -1) {
-            *destType = type;
+        if (pos == 0) {
+            *srcType = type; // Initially assume first token as source
+        } else if (pos == 1) {
+            *destType = type; // Second token, if exists, is destination
         }
         token = strtok(NULL, ",");
         pos++;
+        numOperands++;
+    }
+
+    // If there is only one operand, treat it as the destination operand
+    if (numOperands == 1) {
+        *destType = *srcType;
+        *srcType = -1; // Reset source type since it's actually not provided
     }
 
     // Validate operand types

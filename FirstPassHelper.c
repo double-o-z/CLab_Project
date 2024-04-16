@@ -128,7 +128,7 @@ void printDataList(const AssemblerState* state) {
         char binaryString[15]; // 14 bits + null terminator
         intToBinaryString(state->data.array[i], binaryString);
         // Accessing data through state->data.array
-        printf("Index %d: Int: %d, Binary: %s\n", i, state->data.array[i], binaryString);
+        printf("Index \t%d: Int: \t%d\t Binary: \t%s\n", i, state->data.array[i], binaryString);
     }
 }
 
@@ -140,7 +140,7 @@ void printInstructionsList(const AssemblerState* state) {
         char binaryString[15]; // 14 bits + null terminator
         intToBinaryString(state->instructions.array[i], binaryString);
         // Accessing instructions through state->instructions.array
-        printf("Index %d: Int: %d, Binary: %s\n", i, state->instructions.array[i], binaryString);
+        printf("Index \t%d: Int: \t%d\t Binary: \t%s\n", i, state->instructions.array[i], binaryString);
     }
 }
 
@@ -182,9 +182,17 @@ int to14BitTwosComplement(int value) {
 
 int createFirstWord(int srcType, int destType, int opcode) {
     int firstWord = 0;
-    firstWord |= (srcType & 0x3) << 4;  // Source type in bits 4-5
-    firstWord |= (destType & 0x3) << 2; // Destination type in bits 2-3
-    firstWord |= (opcode & 0xF);        // Opcode in bits 6-9
+
+    // Ensure srcType and destType are non-negative before masking
+    srcType = (srcType >= 0) ? (srcType & 0x3) : 0;
+    destType = (destType >= 0) ? (destType & 0x3) : 0;
+
+    firstWord |= srcType << 4;  // Source type in bits 4-5
+    firstWord |= destType << 2; // Destination type in bits 2-3
+    firstWord |= (opcode & 0xF) << 6;  // Opcode in bits 6-9
+
+    printf("opcode: %d\n", opcode);
+    printf("opcode in bits 6-9: %d\n", (opcode & 0xF) << 6);
 
     return firstWord;
 }
@@ -213,28 +221,49 @@ void addInstructionToInstructionList(DynamicArray* array, int instructionWord) {
 
 void prepareOperandDataWords(AssemblerState* state, int srcType, int destType) {
     int additionalWords = 0;
-
     // Determine the number of words needed for source operand
     if (srcType == 2) { // Direct index
         additionalWords += 2; // Two words: one for the symbol address and one for the index value
     } else if (srcType == 0 || srcType == 1 || srcType == 3) { // Immediate, Direct, Register
         additionalWords += 1;
     }
-
     // Determine the number of words needed for destination operand
     if (destType == 2) { // Direct index
         additionalWords += 2; // Two words: one for the symbol address and one for the index value
     } else if (destType == 0 || destType == 1 || destType == 3) { // Immediate, Direct, Register
         additionalWords += 1;
     }
-
     // Special case: if both operands are registers, consolidate into a single word
     if (srcType == 3 && destType == 3) {
         additionalWords = 1; // Only one word needed because register indices are packed into a single word
     }
 
+    printOperandTypes(srcType, destType);
+    printf("additionalWords: %d\n", additionalWords);
     // Add the calculated number of additional words to the instruction list as placeholders (0)
     for (int i = 0; i < additionalWords; i++) {
+        printf("adding operands instruction word\n");
         addInstructionToInstructionList(&state->instructions, 0); // Placeholder value 0
     }
+}
+
+const char* operandTypeToString(int type) {
+    switch (type) {
+        case 0:
+            return "Immediate";
+        case 1:
+            return "Direct";
+        case 2:
+            return "Direct Index";
+        case 3:
+            return "Register";
+        default:
+            return "Unknown";  // For cases where the type is -1 or any undefined value
+    }
+}
+
+void printOperandTypes(int srcType, int destType) {
+    const char* srcTypeAsString = operandTypeToString(srcType);
+    const char* destTypeAsString = operandTypeToString(destType);
+    printf("found srcType: %s, destType: %s\n", srcTypeAsString, destTypeAsString);
 }
