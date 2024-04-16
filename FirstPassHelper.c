@@ -132,6 +132,18 @@ void printDataList(const AssemblerState* state) {
     }
 }
 
+// Function to print the instructions list
+void printInstructionsList(const AssemblerState* state) {
+    printf("\nInstructions List:\n");
+    // Using state->instructions.count to access the count from DynamicArray
+    for (int i = 0; i < state->instructions.count; i++) {
+        char binaryString[15]; // 14 bits + null terminator
+        intToBinaryString(state->instructions.array[i], binaryString);
+        // Accessing instructions through state->instructions.array
+        printf("Index %d: Int: %d, Binary: %s\n", i, state->instructions.array[i], binaryString);
+    }
+}
+
 // Helper function to check if a string is a valid integer
 int isValidInteger(const char* str) {
     if (*str == '+' || *str == '-')  // Skip the sign if present

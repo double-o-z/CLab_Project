@@ -12,7 +12,7 @@ void FirstPass(ParsedFile* parsedFile) {
     // Call helper functions to print symbols table and data list
     printSymbolsTable(&state);
     printDataList(&state);
-
+    printInstructionsList(&state);
     // Further processing, error checks, etc. (to be implemented)
 }
 

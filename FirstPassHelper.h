@@ -35,6 +35,7 @@ int findSymbolValue(const AssemblerState* state, const char* label);
 
 void printSymbolsTable(const AssemblerState* state);
 void printDataList(const AssemblerState* state);
+void printInstructionsList(const AssemblerState* state);
 void intToBinaryString(int value, char *buffer);
 
 char** splitFirstWhitespace(char* str);
