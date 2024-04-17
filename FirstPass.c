@@ -24,7 +24,7 @@ void FirstPass(ParsedFile* parsedFile, AssemblerState* state) {
 
 // Process a line to determine its type and handle labels
 void processLine(AssemblerState* state, char* line, int lineNumber) {
-    printf("%s\n", line);
+    printf("Handling line: %s\n", line);
     char** parts = splitFirstWhitespace(line);
     char* label = NULL;
     char* command = parts[0];
@@ -42,7 +42,7 @@ void processLine(AssemblerState* state, char* line, int lineNumber) {
         }
     }
 
-    printf("handling command %s, operands: %s\n", command, operands);
+    printf("handling command %s, operands: %s, and label: %s\n", command, operands, label);
     // Handle command type determination here (to be implemented)
     // For example, determine if it's a data directive or an instruction
     // Handle .define directive

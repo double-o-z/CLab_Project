@@ -31,18 +31,21 @@ void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
     state->symbols[state->symbolsCount++] = newSymbol;
 }
 
-// Function to split a string by the first whitespace
 char** splitFirstWhitespace(char* str) {
     char** parts = malloc(2 * sizeof(char*));
-    char* firstSpace = strchr(str, ' ');
+    char* tempStr = strdup(str); // Duplicate the string
+    char* firstSpace = strchr(tempStr, ' ');
+
     if (firstSpace != NULL) {
-        *firstSpace = '\0';  // Split the string
-        parts[0] = str;
-        parts[1] = firstSpace + 1;
+        *firstSpace = '\0';  // Split the duplicated string
+        parts[0] = strdup(tempStr);  // Duplicate the first part
+        parts[1] = strdup(firstSpace + 1);  // Duplicate the second part
     } else {
-        parts[0] = str;
+        parts[0] = strdup(tempStr);  // Duplicate the whole string as only part
         parts[1] = NULL;
     }
+
+    free(tempStr); // Free the temporary string
     return parts;
 }
 
