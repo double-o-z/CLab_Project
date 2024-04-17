@@ -19,6 +19,8 @@ bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opc
 bool isValidType(int type, const int* allowedTypes);
 bool isDirectIndexOperand(const char* operand);
 int determineOperandType(const char* operand);
+bool isValidInteger(const char* str);
+bool isValidDirectOperand(const char* str);
 
 #endif
 

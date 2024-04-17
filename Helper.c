@@ -13,12 +13,13 @@ void printAllLines(ParsedFile parsedFile) {
 AssemblerState initAssemblerState() {
     AssemblerState state;
     state.instructions.array = NULL;  // No initial allocation
-    state.instructions.count = INDEX_FIRST_INSTRUCTION;     // IC initialized to 0
+    state.instructions.count = INDEX_FIRST_INSTRUCTION;  // IC initialized to 0
     state.data.array = NULL;           // No initial allocation
     state.data.count = 0;              // DC initialized to 0
     state.symbols = NULL;              // No initial allocation
     state.symbolsCount = 0;            // Symbols count initialized to 0
-    state.duplicateSymbols = false;  // Initialize the duplicate flag as false
+    state.duplicateSymbols = false;    // Initialize the duplicate flag as false
+    state.instructionCounter = INDEX_FIRST_INSTRUCTION;  // Initialize the second pass instruction counter
     return state;
 }
 

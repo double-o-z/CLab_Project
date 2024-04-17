@@ -83,7 +83,8 @@ bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opc
     }
 
     // Validate operand types
-    return isValidType(*srcType, opcode.sourceTypes) && isValidType(*destType, opcode.destTypes);
+    return isValidType(*srcType, opcode.sourceTypes) &&
+    isValidType(*destType, opcode.destTypes);
 }
 
 bool isValidType(int type, const int* allowedTypes) {
@@ -92,7 +93,11 @@ bool isValidType(int type, const int* allowedTypes) {
             return true;
         }
     }
-    return type == -1;  // If no type was assigned (type == -1), it's valid if no operand is expected
+    if (type == -1)
+        // If no type was assigned (type == -1), it's valid if no operand is expected
+        return i == 0;
+
+    return false;  // type == -2 means invalid operand type
 }
 
 bool isDirectIndexOperand(const char* operand) {
@@ -114,9 +119,13 @@ bool isDirectIndexOperand(const char* operand) {
         return false;
     }
 
+    // Check symbol is a valid Direct type symbol
+    if (!isValidDirectOperand(symbol))
+        return false;
+
     // Check the index part to be either a symbol or an integer
     if (isalpha(index[0])) {  // Start with a letter implies it's a symbol (assuming type MDEFINE is checked during the second pass)
-        return true;
+        return isValidDirectOperand(index);
     } else { // Otherwise, check if it's a valid integer
         char* end;
         strtol(index, &end, 10);
@@ -125,14 +134,47 @@ bool isDirectIndexOperand(const char* operand) {
 }
 
 int determineOperandType(const char* operand) {
-    if (operand[0] == '#') {
-        return 0;  // Immediate operand
+    if (operand == NULL) {
+        return -1;  // No operand - might be valid depending on opcode.
+    } else if (operand[0] == '#') {
+        // Immediate operand, ensure valid integer follows the '#'
+        if (isValidInteger(operand + 1)) {
+            return 0;  // Valid immediate operand
+        } else {
+            return -2;  // Invalid immediate operand format
+        }
     } else if (operand[0] == 'r' && strlen(operand) == 2 && operand[1] >= '0' && operand[1] <= '7') {
         return 3;  // Register operand
     } else if (isDirectIndexOperand(operand)) {
         return 2;  // Direct Index operand
-    } else if (isalpha(operand[0])) {
+    } else if (isValidDirectOperand(operand)) {
         return 1;  // Direct operand
     }
-    return -1;  // Invalid type
+    return -2;  // Invalid operand type
+}
+
+bool isValidInteger(const char* str) {
+    // Skip the sign
+    if (*str == '+' || *str == '-') str++;
+
+    // Check for at least one digit
+    if (!isdigit(*str)) return false;
+
+    // Check all remaining characters are digits
+    while (*str) {
+        if (!isdigit(*str++)) return false;
+    }
+    return true;
+}
+
+bool isValidDirectOperand(const char* str) {
+    // Ensure the first character is alphabetic
+    if (!isalpha(*str)) return false;
+
+    // Check all characters are alphanumeric
+    str++;  // Move past the first character
+    while (*str) {
+        if (!isalnum(*str++)) return false;
+    }
+    return true;
 }

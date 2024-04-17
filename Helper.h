@@ -34,6 +34,7 @@ typedef struct {
     int symbolsCapacity;        // Capacity of the symbol table
     int symbolsCount;           // Number of symbols currently stored
     bool duplicateSymbols;      // Flag to indicate if duplicate symbols have been found
+    int instructionCounter;     // Counter for the current instruction in the second pass
 } AssemblerState;
 
 void printAllLines(ParsedFile parsedFile);

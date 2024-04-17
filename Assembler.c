@@ -16,5 +16,5 @@ void Assemble(const char* inputFilename) {
     FirstPass(&parsedFile, &state);
     SecondPass(&parsedFile, &state);
     CreateOutput(&parsedFile);
-    printf("Finished Assembling input file: %s\n\n\n", inputFilename);
+    printf("\n\nFinished Assembling input file: %s\n\n\n", inputFilename);
 }

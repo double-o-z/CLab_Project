@@ -14,16 +14,33 @@ void SecondPass(ParsedFile* parsedFile, AssemblerState* state) {
         processLineSecondPass(state, parsedFile->lines[i], i + 1);
     }
 
-    printf("Second pass completed for: %s\n", parsedFile->fileName);
+    printf("\n\nSecond pass completed for: %s\n", parsedFile->fileName);
 }
 
-void processInstructionLine(AssemblerState* state, char* line, int lineNumber) {
-    printf("Processing instruction line second pass.\n");
+void processInstructionLine(AssemblerState* state, char* command, char* operands, int lineNumber) {
+    // Find opcode index based on the command
+    int opcodeIndex = findOpcodeIndex(command);
+    if (opcodeIndex == -1) {
+        printf("Error on line %d: Unknown command '%s'\n", lineNumber, command);
+        return;
+    }
 
+    // Validate and parse operands
+    int srcType = -1, destType = -1;
+    if (!parseOperands(&srcType, &destType, operands, opcodes[opcodeIndex])) {
+        printf("Error on line %d: Invalid operands for '%s'\n", lineNumber, command);
+        return;
+    }
+
+    // Move to the next instruction location before encoding additional words
+    state->instructionCounter++;
+
+    // Encode the additional operand data words
+    encodeOperandDataWords(state, srcType, destType, operands, lineNumber, state->instructionCounter);
 }
 
 void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
-    printf("Handling line: %s\n", line);
+    printf("\nHandling line: %s\n", line);
     char** parts = splitFirstWhitespace(line);
     char* label = NULL;
     char* command = parts[0];
@@ -43,10 +60,15 @@ void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
 
     printf("handling command %s, operands: %s, and label: %s\n", command, operands, label);
     if (isDirective(line)) {
-        // Skip directive lines
         printf("Skipping directive: %s\n", line);
     } else {
-        // Process instruction lines
-        processInstructionLine(state, line, lineNumber);
+        processInstructionLine(state, command, operands, lineNumber);
     }
+
+    // Clean up parts
+    free(parts[0]);
+    if (parts[1] != NULL) {
+        free(parts[1]);
+    }
+    free(parts);
 }
