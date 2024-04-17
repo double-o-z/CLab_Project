@@ -13,7 +13,7 @@ bool isDirective(char* line);
 void encodeOperandDataWords(AssemblerState* state, int srcType, int destType, char* operands, int lineNumber);
 void encodeRegisterPair(AssemblerState* state, char* srcOperand, char* destOperand, int lineNumber);
 void encodeOperandByType(AssemblerState* state, int type, char* operand, int lineNumber, OperandPlacement placement);
-void encodeImmediateOperand(AssemblerState* state, char* operands, int lineNumber);
+void encodeImmediateOperand(AssemblerState* state, char* operands, int lineNumber, bool isSubOperand);
 void encodeDirectOperand(AssemblerState* state, char* operands, int lineNumber);
 void encodeDirectIndexOperand(AssemblerState* state, char* operands, int lineNumber);
 void encodeRegisterOperand(AssemblerState* state, char* operand, int lineNumber, OperandPlacement placement);

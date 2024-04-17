@@ -5,7 +5,7 @@ void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
     for (int i = 0; i < state->symbolsCount; i++) {
         if (strcmp(state->symbols[i].label, newSymbol.label) == 0) {
             fprintf(stderr, "Error: Duplicate symbol '%s' found.\n", newSymbol.label);
-            state->duplicateSymbols = true;
+            state->assemblerError = true;
             return;  // Do not add the duplicate symbol, return immediately
         }
     }

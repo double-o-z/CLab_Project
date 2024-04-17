@@ -33,7 +33,7 @@ typedef struct {
     Symbol* symbols;            // Symbol table
     int symbolsCapacity;        // Capacity of the symbol table
     int symbolsCount;           // Number of symbols currently stored
-    bool duplicateSymbols;      // Flag to indicate if duplicate symbols have been found
+    bool assemblerError;        // Flag that tells whether assembler can create output or not.
     int instructionCounter;     // Counter for the current instruction in the second pass
 } AssemblerState;
 
@@ -42,5 +42,6 @@ void dynamicInsert(DynamicArray* array, int value);
 AssemblerState initAssemblerState();
 void printSymbolsTable(const AssemblerState* state);
 bool isValidInteger(const char* str);
+const char* symbolTypeToString(int type);
 
 #endif /* HELPER_H */

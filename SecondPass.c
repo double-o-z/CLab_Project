@@ -4,8 +4,8 @@
 void SecondPass(ParsedFile* parsedFile, AssemblerState* state) {
     printf("\n\nSecond pass for: %s\n", parsedFile->fileName);
 
-    if (state->duplicateSymbols) {
-        printf("Duplicate symbols found in this file, aborting second pass.\n");
+    if (state->assemblerError) {
+        printf("Aborting second pass due to error in assembler during first pass.\n");
         return;
     }
 
@@ -62,7 +62,8 @@ void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
         }
     }
 
-    printf("handling command %s, operands: %s, and label: %s\n", command, operands, label);
+    printf("handling command %s, operands: %s, and label: %s. "
+           "First word value: %d\n", command, operands, label, state->instructions.array[state->instructionCounter]);
     if (isDirective(line)) {
         printf("Skipping directive: %s\n", line);
     } else {

@@ -65,7 +65,7 @@ void encodeOperandDataWords(AssemblerState* state, int srcType, int destType, ch
 void encodeOperandByType(AssemblerState* state, int type, char* operand, int lineNumber, OperandPlacement placement) {
     switch (type) {
         case 0: // Immediate
-            encodeImmediateOperand(state, operand, lineNumber);
+            encodeImmediateOperand(state, operand, lineNumber, false);
             break;
         case 1: // Direct
             encodeDirectOperand(state, operand, lineNumber);
@@ -83,10 +83,11 @@ void encodeOperandByType(AssemblerState* state, int type, char* operand, int lin
 }
 
 void encodeRegisterOperand(AssemblerState* state, char* operand, int lineNumber, OperandPlacement placement) {
-    printf("Encoding register operand at line %d, placement: %s\n",
-           lineNumber, placement == SOURCE_OPERAND ? "source" : "destination");
-    state->instructions.array[state->instructionCounter] = calculateRegisterWord(operand, placement);
+    int value = calculateRegisterWord(operand, placement);
+    state->instructions.array[state->instructionCounter] = value;
     state->instructionCounter++;
+    printf("Encoding register operand at line %d, placement: %s, and value: %d\n",
+           lineNumber, placement == SOURCE_OPERAND ? "source" : "destination", value);
 }
 
 int calculateRegisterWord(const char* operand, OperandPlacement placement) {
@@ -113,18 +114,21 @@ int calculateRegisterPairWord(const char* srcOperand, const char* destOperand) {
 
     int srcWord = srcIndex << 5;  // Shift source index left by 5 bits
     int destWord = destIndex << 2;  // Shift destination index left by 2 bits
-
-    return srcWord + destWord;  // Combine the two words
+    int result = srcWord + destWord;  // Combine the two words
+    printf("Result of calculateRegisterPairWord: %d\n", result);
+    return result;
 }
 
-void encodeImmediateOperand(AssemblerState* state, char* operand, int lineNumber) {
-    printf("Encoding immediate operand at line %d\n", lineNumber);
+void encodeImmediateOperand(AssemblerState* state, char* operand, int lineNumber, bool isSubOperand) {
+    printf("Encoding immediate operand: %s, at line %d\n", operand, lineNumber);
     int value = 0;
     bool valid = true; // Assume valid unless proven otherwise
 
     // Operand should be in the format '#X' where X is an integer or MDEFINE symbol
-    if (operand[0] == '#') {
-        char* valueStr = operand + 1;
+    if (operand[0] == '#' || isSubOperand) {
+        // If called on main operand, start parsing after # sign.
+        // If called as index of list operand, there will be no #, so start immediately to parse.
+        char* valueStr = operand + 1 - isSubOperand;
         if (isdigit(valueStr[0]) || valueStr[0] == '+' || valueStr[0] == '-') {
             value = atoi(valueStr); // Convert the string to integer
         } else { // Treat as a symbol
@@ -139,8 +143,8 @@ void encodeImmediateOperand(AssemblerState* state, char* operand, int lineNumber
     }
 
     if (!valid) {
-        state->duplicateSymbols = true; // Flag error
-        value = 0; // Use 0 as a placeholder value
+        state->assemblerError = true; // Flag error decoding operand
+        value = 0;                    // Use 0 as a placeholder value
     }
 
     state->instructions.array[state->instructionCounter] = calculateImmediateWord(value);
@@ -148,16 +152,19 @@ void encodeImmediateOperand(AssemblerState* state, char* operand, int lineNumber
 }
 
 void encodeDirectOperand(AssemblerState* state, char* operand, int lineNumber) {
-    printf("Encoding direct operand at line %d\n", lineNumber);
+    printf("Encoding direct operand: %s\n", operand);
     Symbol* symbol = findSymbolInST(state, operand);
-    if (!symbol || symbol->type == CODE) { // Ensure symbol exists and is not of type CODE
+    if (symbol != NULL)
+        printf("With symbol type: %s, and value: %d\n", symbolTypeToString(symbol->type), symbol->value);
+    // Ensure symbol exists and is of type DATA\ENTRY\EXTERNAL
+    if (!symbol || symbol->type == MDEFINE) {
         printf("Error: Symbol '%s' not found or invalid type at line %d\n", operand, lineNumber);
-        state->duplicateSymbols = true; // Flag error
-        state->instructions.array[state->instructionCounter] = 0; // Placeholder
+        state->assemblerError = true; // Error misuse of operand - using incompatible variable as list.
+        state->instructions.array[state->instructionCounter++] = 0; // Placeholder
     } else {
-        state->instructions.array[state->instructionCounter] = calculateDirectWord(symbol->value, symbol->type);
+        state->instructions.array[state->instructionCounter++] = calculateDirectWord(symbol->value,
+                                                                                     symbol->type);
     }
-    state->instructionCounter++;
 }
 
 void encodeDirectIndexOperand(AssemblerState* state, char* operand, int lineNumber) {
@@ -165,20 +172,20 @@ void encodeDirectIndexOperand(AssemblerState* state, char* operand, int lineNumb
     // Operand expected to be in the format "symbol[index]"
     char* symbolPart = strtok(operand, "[");
     char* indexPart = strtok(NULL, "]");
-
+    printf("With symbolPart: %s, and indexPart: %s\n", symbolPart, indexPart);
     if (!symbolPart || !indexPart) {
         printf("Error: Invalid direct index operand format at line %d\n", lineNumber);
-        state->duplicateSymbols = true;
+        state->assemblerError = true;
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
         return;
     }
 
     encodeDirectOperand(state, symbolPart, lineNumber); // Handle the symbol part
-    encodeImmediateOperand(state, indexPart, lineNumber); // Handle the index part
+    encodeImmediateOperand(state, indexPart, lineNumber, true); // Handle the index part
 }
 
-// Example function to find a symbol in the symbol table
+// find a symbol in the symbol table
 Symbol* findSymbolInST(AssemblerState* state, const char* name) {
     for (int i = 0; i < state->symbolsCount; i++) {
         if (strcmp(state->symbols[i].label, name) == 0) {
@@ -191,8 +198,10 @@ Symbol* findSymbolInST(AssemblerState* state, const char* name) {
 int calculateDirectWord(int value, SymbolType type) {
     int result = value << 2; // Shift value left to leave room for A, R, E bits
     switch (type) {
-        case MDEFINE:
         case DATA:
+            result |= 2; // Binary 10: A = 1, R = 0, E = 0 (local)
+            break;
+        case CODE:
             result |= 2; // Binary 10: A = 1, R = 0, E = 0 (local)
             break;
         case ENTRY:
@@ -206,9 +215,13 @@ int calculateDirectWord(int value, SymbolType type) {
             printf("Unexpected symbol type for direct word calculation.\n");
             break;
     }
+    printf("Result of calculateDirectWord: %d\n", result);
     return result;
 }
 
 int calculateImmediateWord(int value) {
-    return value << 2; // Shift the immediate value left by 2 bits to align it properly
+    // Shift the immediate value left by 2 bits to align it properly
+    int result = value << 2;
+    printf("Result of calculateImmediateWord: %d\n", result);
+    return result;
 }

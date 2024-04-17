@@ -13,14 +13,14 @@ void printAllLines(ParsedFile parsedFile) {
 // Initialize assembler state
 AssemblerState initAssemblerState() {
     AssemblerState state;
-    state.instructions.array = NULL;  // No initial allocation
-    state.instructions.count = 0;  // IC initialized to 0
+    state.instructions.array = NULL;   // No initial allocation
+    state.instructions.count = 0;      // IC initialized to 0
     state.data.array = NULL;           // No initial allocation
     state.data.count = 0;              // DC initialized to 0
     state.symbols = NULL;              // No initial allocation
     state.symbolsCount = 0;            // Symbols count initialized to 0
-    state.duplicateSymbols = false;    // Initialize the duplicate flag as false
-    state.instructionCounter = 0;  // Initialize the second pass instruction counter
+    state.assemblerError = false;      // Initialize the duplicate flag as false
+    state.instructionCounter = 0;      // Initialize the second pass instruction counter
     return state;
 }
 
@@ -53,25 +53,16 @@ void printSymbolsTable(const AssemblerState* state) {
     printf("Label\t\tType\t\tValue\n");
     for (int i = 0; i < state->symbolsCount; i++) {
         char* type;
-        int offsetValue = 0;
         switch (state->symbols[i].type) {
-            case MDEFINE: type = "mdefine"; break;
-            case CODE:
-                type = "code";
-                offsetValue = INDEX_FIRST_INSTRUCTION;
-                break;
-            case DATA:
-                offsetValue = INDEX_FIRST_INSTRUCTION + state->instructions.count;
-                type = "data";
-                break;
-            case EXTERNAL: type = "extern"; break;
-            case ENTRY: type = "entry"; break;
-            default: type = "unknown"; break;
+            case MDEFINE:  type = "mdefine"; break;
+            case CODE:     type = "code";    break;
+            case DATA:     type = "data";    break;
+            case EXTERNAL: type = "extern";  break;
+            case ENTRY:    type = "entry";   break;
+            default:       type = "unknown"; break;
         }
-        printf("%s\t\t%s\t\t%d\n", state->symbols[i].label, type, state->symbols[i].value + offsetValue);
+        printf("%s\t\t%s\t\t%d\n", state->symbols[i].label, type, state->symbols[i].value);
     }
-    printf("\nSymbols Table: %s\n",
-           state->duplicateSymbols ? "Duplicate found" : "No duplicate found");
 }
 
 bool isValidInteger(const char* str) {
@@ -86,4 +77,19 @@ bool isValidInteger(const char* str) {
         if (!isdigit(*str++)) return false;
     }
     return true;
+}
+
+const char* symbolTypeToString(int type) {
+    switch (type) {
+        case 0:
+            return "MDEFINE";
+        case 1:
+            return "CODE";
+        case 2:
+            return "DATA";
+        case 3:
+            return "EXTERNAL";
+        default:
+            return "ENTRY";  // For cases where the type is -1 or any undefined value
+    }
 }

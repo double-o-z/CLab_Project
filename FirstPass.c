@@ -9,17 +9,18 @@ void FirstPass(ParsedFile* parsedFile, AssemblerState* state) {
         processLine(state, parsedFile->lines[i], i + 1);
     }
 
-    // Increase Data count by instructions count
-    // state->data.count += state->instructions.count;
-//    for (int i = 0; i < state->symbolsCount; ++i) {
-//        if (state->symbols[i].type == DATA){
-//            state->symbols[i].value += state->instructions.count + INDEX_FIRST_INSTRUCTION;
-//        }
-//    }
+    // Update symbols table with this indices change.
+    for (int i = 0; i < state->symbolsCount; ++i) {
+        if (state->symbols[i].type == DATA || state->symbols[i].type == ENTRY){
+            state->symbols[i].value += state->instructions.count + INDEX_FIRST_INSTRUCTION;
+        } else if (state->symbols[i].type == CODE){
+            state->symbols[i].value += INDEX_FIRST_INSTRUCTION;
+        }
+    }
 
     // Call helper functions to print symbols table and data list
-    printDataList(state);
     printSymbolsTable(state);
+    printDataList(state);
     printInstructionsList(state);
 }
 
