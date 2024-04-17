@@ -14,6 +14,10 @@ void SecondPass(ParsedFile* parsedFile, AssemblerState* state) {
         processLineSecondPass(state, parsedFile->lines[i], i + 1);
     }
 
+    // Call helper functions to print symbols table and data list
+    printDataList(state);
+    printSymbolsTable(state);
+    printInstructionsList(state);
     printf("\n\nSecond pass completed for: %s\n", parsedFile->fileName);
 }
 
@@ -36,7 +40,7 @@ void processInstructionLine(AssemblerState* state, char* command, char* operands
     state->instructionCounter++;
 
     // Encode the additional operand data words
-    encodeOperandDataWords(state, srcType, destType, operands, lineNumber, state->instructionCounter);
+    encodeOperandDataWords(state, srcType, destType, operands, lineNumber);
 }
 
 void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {

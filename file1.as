@@ -3,8 +3,8 @@
 	.define sz = 2
 MAIN:   mov r3, LIST[sz]
 LOOP:   jmp L1
+	.entry END
 mcr m_mcr
-.entry END
 cmp r3, #sz
 bne END
 endmcr
@@ -22,7 +22,7 @@ END: hlt
 
 STR: 	.string "abcdef"
 LIST: 	.data 6, -9, len
-K: 		.data 8193
+K: 		.data 155
 
 	.extern L3
 

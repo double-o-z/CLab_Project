@@ -1,4 +1,5 @@
 #include "Helper.h"
+#include "ctype.h"
 
 const int INDEX_FIRST_INSTRUCTION = 100;
 
@@ -13,13 +14,13 @@ void printAllLines(ParsedFile parsedFile) {
 AssemblerState initAssemblerState() {
     AssemblerState state;
     state.instructions.array = NULL;  // No initial allocation
-    state.instructions.count = INDEX_FIRST_INSTRUCTION;  // IC initialized to 0
+    state.instructions.count = 0;  // IC initialized to 0
     state.data.array = NULL;           // No initial allocation
     state.data.count = 0;              // DC initialized to 0
     state.symbols = NULL;              // No initial allocation
     state.symbolsCount = 0;            // Symbols count initialized to 0
     state.duplicateSymbols = false;    // Initialize the duplicate flag as false
-    state.instructionCounter = INDEX_FIRST_INSTRUCTION;  // Initialize the second pass instruction counter
+    state.instructionCounter = 0;  // Initialize the second pass instruction counter
     return state;
 }
 
@@ -42,25 +43,47 @@ void dynamicInsert(DynamicArray* array, int value) {
     }
 
     // Insert the new value
+    printf("Adding to array value: %d\n", value);
     array->array[array->count++] = value;
 }
 
 // Function to print the symbols table
 void printSymbolsTable(const AssemblerState* state) {
-    printf("\nSymbols Table:\n");
-    printf("Label\tType\tValue\n");
+    printf("\nSymbols Table:\n\n");
+    printf("Label\t\tType\t\tValue\n");
     for (int i = 0; i < state->symbolsCount; i++) {
         char* type;
+        int offsetValue = 0;
         switch (state->symbols[i].type) {
             case MDEFINE: type = "mdefine"; break;
-            case CODE: type = "code"; break;
-            case DATA: type = "data"; break;
+            case CODE:
+                type = "code";
+                offsetValue = INDEX_FIRST_INSTRUCTION;
+                break;
+            case DATA:
+                offsetValue = INDEX_FIRST_INSTRUCTION + state->instructions.count;
+                type = "data";
+                break;
             case EXTERNAL: type = "extern"; break;
             case ENTRY: type = "entry"; break;
             default: type = "unknown"; break;
         }
-        printf("%s\t%s\t%d\n", state->symbols[i].label, type, state->symbols[i].value);
+        printf("%s\t\t%s\t\t%d\n", state->symbols[i].label, type, state->symbols[i].value + offsetValue);
     }
     printf("\nSymbols Table: %s\n",
            state->duplicateSymbols ? "Duplicate found" : "No duplicate found");
+}
+
+bool isValidInteger(const char* str) {
+    // Skip the sign
+    if (*str == '+' || *str == '-') str++;
+
+    // Check for at least one digit
+    if (!isdigit(*str)) return false;
+
+    // Check all remaining characters are digits
+    while (*str) {
+        if (!isdigit(*str++)) return false;
+    }
+    return true;
 }

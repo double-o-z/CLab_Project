@@ -88,7 +88,8 @@ bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opc
 }
 
 bool isValidType(int type, const int* allowedTypes) {
-    for (int i = 0; allowedTypes[i] != -1; i++) {
+    int i;
+    for (i = 0; allowedTypes[i] != -1; i++) {
         if (type == allowedTypes[i]) {
             return true;
         }
@@ -151,20 +152,6 @@ int determineOperandType(const char* operand) {
         return 1;  // Direct operand
     }
     return -2;  // Invalid operand type
-}
-
-bool isValidInteger(const char* str) {
-    // Skip the sign
-    if (*str == '+' || *str == '-') str++;
-
-    // Check for at least one digit
-    if (!isdigit(*str)) return false;
-
-    // Check all remaining characters are digits
-    while (*str) {
-        if (!isdigit(*str++)) return false;
-    }
-    return true;
 }
 
 bool isValidDirectOperand(const char* str) {

@@ -41,5 +41,6 @@ void printAllLines(ParsedFile parsedFile);
 void dynamicInsert(DynamicArray* array, int value);
 AssemblerState initAssemblerState();
 void printSymbolsTable(const AssemblerState* state);
+bool isValidInteger(const char* str);
 
 #endif /* HELPER_H */

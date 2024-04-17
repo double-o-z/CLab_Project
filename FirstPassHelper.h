@@ -1,12 +1,12 @@
 #ifndef FIRSTPASSHELPER_H
 #define FIRSTPASSHELPER_H
 #define _POSIX_C_SOURCE 200809L
+#include "Helper.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include "Helper.h"
 
 void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol);
 int findSymbolValue(const AssemblerState* state, const char* label);
@@ -18,7 +18,6 @@ void intToBinaryString(int value, char *buffer);
 
 char** splitFirstWhitespace(char* str);
 char* trim(char* str);
-int isValidInteger(const char* str);
 int to14BitTwosComplement(int value);
 int createFirstWord(int srcType, int destType, int opcode);
 void addInstructionToInstructionList(DynamicArray* array, int instructionWord);

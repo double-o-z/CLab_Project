@@ -84,11 +84,16 @@ void intToBinaryString(int value, char *buffer) {
 // Function to print the data list
 void printDataList(const AssemblerState* state) {
     printf("\nData List:\n");
-    for (int i = state->instructions.count; i < state->data.count; i++) {  // Using state->data.count to access the count from DynamicArray
+    // Using state->data.count to access the count from DynamicArray
+    for (int i = 0; i < state->data.count; i++) {
         char binaryString[15]; // 14 bits + null terminator
         intToBinaryString(state->data.array[i], binaryString);
         // Accessing data through state->data.array
-        printf("Index \t%d: Int: \t%d\t Binary: \t%s\n", i, state->data.array[i], binaryString);
+        printf("Index \t%d: \tInt: \t%d%s\t Binary: \t%s\n",
+               i + INDEX_FIRST_INSTRUCTION + state->instructions.count,
+               state->data.array[i],
+               (state->data.array[i] >= 10000000 || state->data.array[i] <= -1000000) ? "" : "\t",
+               binaryString);
     }
 }
 
@@ -96,33 +101,29 @@ void printDataList(const AssemblerState* state) {
 void printInstructionsList(const AssemblerState* state) {
     printf("\nInstructions List:\n");
     // Using state->instructions.count to access the count from DynamicArray
-    for (int i = INDEX_FIRST_INSTRUCTION; i < state->instructions.count; i++) {
+    for (int i = 0; i < state->instructions.count; i++) {
         char binaryString[15]; // 14 bits + null terminator
         intToBinaryString(state->instructions.array[i], binaryString);
         // Accessing instructions through state->instructions.array
-        printf("Index \t%d: Int: \t%d\t Binary: \t%s\n", i, state->instructions.array[i], binaryString);
+        printf("Index \t%d: \tInt: \t%d%s\t Binary: \t%s\n",
+               i + INDEX_FIRST_INSTRUCTION,
+               state->instructions.array[i],
+               (state->instructions.array[i] >= 10000000 || state->instructions.array[i] <= -1000000) ? "" : "\t",
+               binaryString);
     }
-}
-
-// Helper function to check if a string is a valid integer
-int isValidInteger(const char* str) {
-    if (*str == '+' || *str == '-')  // Skip the sign if present
-        str++;
-    if (*str == '\0')  // String is only a sign
-        return 0;
-    while (*str) {
-        if (!isdigit(*str))
-            return 0;
-        str++;
-    }
-    return 1;
 }
 
 // Helper function to find a symbol in the symbol table and return its value
 int findSymbolValue(const AssemblerState* state, const char* label) {
     for (int i = 0; i < state->symbolsCount; i++) {
-        if (strcmp(state->symbols[i].label, label) == 0 && state->symbols[i].type == MDEFINE) {
-            return state->symbols[i].value;
+        if (strcmp(state->symbols[i].label, label) == 0) {
+            if (state->symbols[i].type == MDEFINE) {
+                return state->symbols[i].value;
+            }
+            else {
+                fprintf(stderr, "Error: Usage of symbol '%s' is not allowed in this directive.\n", label);
+            }
+
         }
     }
     return -1;  // Return -1 if not found, you can handle this case based on your error handling strategy

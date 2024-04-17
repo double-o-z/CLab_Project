@@ -7,7 +7,7 @@
 #include "Opcodes.h"
 
 void SecondPass(ParsedFile* parsedFile, AssemblerState* state);
-void processInstructionLine(AssemblerState* state, char* line, int lineNumber);
 void processLineSecondPass(AssemblerState* state, char* line, int lineNumber);
+void processInstructionLine(AssemblerState* state, char* command, char* operands, int lineNumber);
 
 #endif

@@ -2,6 +2,7 @@
 #ifndef OPCODES_H
 #define OPCODES_H
 
+#include "Helper.h"
 #include "stdbool.h"
 
 typedef struct {
@@ -16,11 +17,10 @@ extern Opcode opcodes[];
 int findOpcodeIndex(const char* command);
 void initOperandTypes(int *types, int num, ...);
 bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opcode);
-bool isValidType(int type, const int* allowedTypes);
 bool isDirectIndexOperand(const char* operand);
 int determineOperandType(const char* operand);
-bool isValidInteger(const char* str);
 bool isValidDirectOperand(const char* str);
+bool isValidType(int type, const int* allowedTypes);
 
 #endif
 
