@@ -68,7 +68,7 @@ void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
            "First word value: %d\n", command, operands, label, state->instructions.array[state->instructionCounter]);
     if (strcmp(command, ".entry") == 0) {
         Symbol* symbol = findSymbolInST(state, operands);
-        if (symbol != NULL && symbol->type == DATA) {
+        if (symbol != NULL && (symbol->type == DATA || symbol->type == CODE)) {
             symbol->type = ENTRY;
             state->entriesExist = true;
         } else {
