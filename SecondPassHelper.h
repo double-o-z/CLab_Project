@@ -3,6 +3,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "Helper.h"
 #include "FirstPassHelper.h"
+#include "Opcodes.h"
 #include <stdbool.h>
 #include <ctype.h>
 
@@ -15,11 +16,11 @@ void encodeRegisterPair(AssemblerState* state, char* srcOperand, char* destOpera
 void encodeOperandByType(AssemblerState* state, int type, char* operand, int lineNumber, OperandPlacement placement);
 void encodeImmediateOperand(AssemblerState* state, char* operands, int lineNumber, bool isSubOperand);
 void encodeDirectOperand(AssemblerState* state, char* operands, int lineNumber);
+void addExternalLocation(AssemblerState* state, char* label, int lineNumber);
 void encodeDirectIndexOperand(AssemblerState* state, char* operands, int lineNumber);
 void encodeRegisterOperand(AssemblerState* state, char* operand, int lineNumber, OperandPlacement placement);
 int calculateRegisterPairWord(const char* srcOperand, const char* destOperand);
 int calculateRegisterWord(const char* operand, OperandPlacement placement);
-Symbol* findSymbolInST(AssemblerState* state, const char* name);
 int calculateImmediateWord(int value);
 int calculateDirectWord(int value, SymbolType type);
 #endif /* SECONDPASSHELPER_H */

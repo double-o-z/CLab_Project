@@ -14,7 +14,7 @@ bool isDirective(char* line) {
 
     // List of known directive commands
     const char* directives[] = {
-            ".define", ".data", ".string", ".extern", ".entry", NULL
+            ".define", ".data", ".string", ".extern", NULL
     };
 
     for (const char** dir = directives; *dir != NULL; dir++) {
@@ -87,7 +87,7 @@ void encodeRegisterOperand(AssemblerState* state, char* operand, int lineNumber,
     state->instructions.array[state->instructionCounter] = value;
     state->instructionCounter++;
     printf("Encoding register operand at line %d, placement: %s, and value: %d\n",
-           lineNumber, placement == SOURCE_OPERAND ? "source" : "destination", value);
+           lineNumber + INDEX_FIRST_INSTRUCTION, placement == SOURCE_OPERAND ? "source" : "destination", value);
 }
 
 int calculateRegisterWord(const char* operand, OperandPlacement placement) {
@@ -100,7 +100,7 @@ int calculateRegisterWord(const char* operand, OperandPlacement placement) {
 }
 
 void encodeRegisterPair(AssemblerState* state, char* srcOperand, char* destOperand, int lineNumber) {
-    printf("Encoding register pair at line %d\n", lineNumber);
+    printf("Encoding register pair at line %d\n", lineNumber + INDEX_FIRST_INSTRUCTION);
     // Logic to encode a pair of register operands into a single word
     int regPairValue = calculateRegisterPairWord(srcOperand, destOperand); // Assume function to calculate the encoded word
     state->instructions.array[state->instructionCounter] = regPairValue;
@@ -120,7 +120,7 @@ int calculateRegisterPairWord(const char* srcOperand, const char* destOperand) {
 }
 
 void encodeImmediateOperand(AssemblerState* state, char* operand, int lineNumber, bool isSubOperand) {
-    printf("Encoding immediate operand: %s, at line %d\n", operand, lineNumber);
+    printf("Encoding immediate operand: %s, at line %d\n", operand, lineNumber + INDEX_FIRST_INSTRUCTION);
     int value = 0;
     bool valid = true; // Assume valid unless proven otherwise
 
@@ -136,7 +136,8 @@ void encodeImmediateOperand(AssemblerState* state, char* operand, int lineNumber
             if (symbol && symbol->type == MDEFINE) {
                 value = symbol->value;
             } else {
-                printf("Error: Symbol '%s' not found or invalid type at line %d\n", valueStr, lineNumber);
+                printf("Error: Symbol '%s' not found or invalid type at line %d\n",
+                       valueStr, lineNumber + INDEX_FIRST_INSTRUCTION);
                 valid = false;
             }
         }
@@ -152,13 +153,19 @@ void encodeImmediateOperand(AssemblerState* state, char* operand, int lineNumber
 }
 
 void encodeDirectOperand(AssemblerState* state, char* operand, int lineNumber) {
-    printf("Encoding direct operand: %s\n", operand);
+    printf("Encoding direct operand: %s, at line: %d\n", operand, lineNumber + INDEX_FIRST_INSTRUCTION);
     Symbol* symbol = findSymbolInST(state, operand);
-    if (symbol != NULL)
+    if (symbol != NULL){
         printf("With symbol type: %s, and value: %d\n", symbolTypeToString(symbol->type), symbol->value);
+        if (symbol->type == EXTERNAL) {
+            addExternalLocation(state, symbol->label, lineNumber);
+        }
+    }
+
     // Ensure symbol exists and is of type DATA\ENTRY\EXTERNAL
     if (!symbol || symbol->type == MDEFINE) {
-        printf("Error: Symbol '%s' not found or invalid type at line %d\n", operand, lineNumber);
+        printf("Error: Symbol '%s' not found or invalid type at line %d\n",
+               operand, lineNumber + INDEX_FIRST_INSTRUCTION);
         state->assemblerError = true; // Error misuse of operand - using incompatible variable as list.
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
     } else {
@@ -167,14 +174,20 @@ void encodeDirectOperand(AssemblerState* state, char* operand, int lineNumber) {
     }
 }
 
+void addExternalLocation(AssemblerState* state, char* label, int lineNumber) {
+    // Logic to add line and symbol name to externalLocations list
+    External newExternal = {strdup(label), lineNumber};
+    dynamicInsertExternal(state, newExternal);
+}
+
 void encodeDirectIndexOperand(AssemblerState* state, char* operand, int lineNumber) {
-    printf("Encoding direct index operand at line %d\n", lineNumber);
+    printf("Encoding direct index operand at line %d\n", lineNumber + INDEX_FIRST_INSTRUCTION);
     // Operand expected to be in the format "symbol[index]"
     char* symbolPart = strtok(operand, "[");
     char* indexPart = strtok(NULL, "]");
     printf("With symbolPart: %s, and indexPart: %s\n", symbolPart, indexPart);
     if (!symbolPart || !indexPart) {
-        printf("Error: Invalid direct index operand format at line %d\n", lineNumber);
+        printf("Error: Invalid direct index operand format at line %d\n", lineNumber + INDEX_FIRST_INSTRUCTION);
         state->assemblerError = true;
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
@@ -183,16 +196,6 @@ void encodeDirectIndexOperand(AssemblerState* state, char* operand, int lineNumb
 
     encodeDirectOperand(state, symbolPart, lineNumber); // Handle the symbol part
     encodeImmediateOperand(state, indexPart, lineNumber, true); // Handle the index part
-}
-
-// find a symbol in the symbol table
-Symbol* findSymbolInST(AssemblerState* state, const char* name) {
-    for (int i = 0; i < state->symbolsCount; i++) {
-        if (strcmp(state->symbols[i].label, name) == 0) {
-            return &state->symbols[i];
-        }
-    }
-    return NULL;
 }
 
 int calculateDirectWord(int value, SymbolType type) {

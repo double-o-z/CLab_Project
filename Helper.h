@@ -23,6 +23,11 @@ typedef struct {
 } Symbol;
 
 typedef struct {
+    char* label;
+    int lineNumber;
+} External;
+
+typedef struct {
     int* array;     // Array of data or instructions
     int count;      // Counter for number of elements (DC or IC)
 } DynamicArray;
@@ -31,16 +36,18 @@ typedef struct {
     DynamicArray instructions;  // Instructions array with IC
     DynamicArray data;          // Data array with DC
     Symbol* symbols;            // Symbol table
-    int symbolsCapacity;        // Capacity of the symbol table
     int symbolsCount;           // Number of symbols currently stored
     bool assemblerError;        // Flag that tells whether assembler can create output or not.
     int instructionCounter;     // Counter for the current instruction in the second pass
+    External* externals;        // Externals array.
+    int externalsCount;         // Number of externals currently stored
 } AssemblerState;
 
 void printAllLines(ParsedFile parsedFile);
 void dynamicInsert(DynamicArray* array, int value);
 AssemblerState initAssemblerState();
 void printSymbolsTable(const AssemblerState* state);
+void printExternalsTable(const AssemblerState* state);
 bool isValidInteger(const char* str);
 const char* symbolTypeToString(int type);
 

@@ -47,7 +47,7 @@ void initOperandTypes(int *types, int num, ...) {
     va_end(args);
 }
 
-bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opcode) {
+bool parseOperands(AssemblerState* state, int* srcType, int* destType, const char* operands, Opcode opcode) {
     char operandStr[100]; // Buffer to hold a copy of operands
     if (operands != NULL) {
         strncpy(operandStr, operands, sizeof(operandStr) - 1);
@@ -65,7 +65,7 @@ bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opc
     int numOperands = 0;
 
     while (token != NULL) {
-        int type = determineOperandType(token);
+        int type = determineOperandType(state, token);
         if (pos == 0) {
             *srcType = type; // Initially assume first token as source
         } else if (pos == 1) {
@@ -81,7 +81,7 @@ bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opc
         *destType = *srcType;
         *srcType = -1; // Reset source type since it's actually not provided
     }
-
+    printf("srcType: %d, destType: %d\n", *srcType, *destType);
     // Validate operand types
     return isValidType(*srcType, opcode.sourceTypes) &&
     isValidType(*destType, opcode.destTypes);
@@ -134,15 +134,30 @@ bool isDirectIndexOperand(const char* operand) {
     }
 }
 
-int determineOperandType(const char* operand) {
+// find a symbol in the symbol table
+Symbol* findSymbolInST(AssemblerState* state, const char* name) {
+    for (int i = 0; i < state->symbolsCount; i++) {
+        if (strcmp(state->symbols[i].label, name) == 0) {
+            return &state->symbols[i];
+        }
+    }
+    return NULL;
+}
+
+int determineOperandType(AssemblerState* state, const char* operand) {
     if (operand == NULL) {
         return -1;  // No operand - might be valid depending on opcode.
     } else if (operand[0] == '#') {
         // Immediate operand, ensure valid integer follows the '#'
         if (isValidInteger(operand + 1)) {
-            return 0;  // Valid immediate operand
-        } else {
-            return -2;  // Invalid immediate operand format
+            return 0; // Valid immediate operand as int.
+        } else { // Treat as a symbol
+            Symbol* symbol = findSymbolInST(state, operand + 1);
+            if (symbol && symbol->type == MDEFINE) {
+                return 0;
+            } else {
+                return -2;
+            }
         }
     } else if (operand[0] == 'r' && strlen(operand) == 2 && operand[1] >= '0' && operand[1] <= '7') {
         return 3;  // Register operand

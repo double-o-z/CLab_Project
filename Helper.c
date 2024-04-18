@@ -21,6 +21,8 @@ AssemblerState initAssemblerState() {
     state.symbolsCount = 0;            // Symbols count initialized to 0
     state.assemblerError = false;      // Initialize the duplicate flag as false
     state.instructionCounter = 0;      // Initialize the second pass instruction counter
+    state.externals = NULL;            // No initial allocation
+    state.externalsCount = 0;          // Externals count initialized to 0
     return state;
 }
 
@@ -62,6 +64,15 @@ void printSymbolsTable(const AssemblerState* state) {
             default:       type = "unknown"; break;
         }
         printf("%s\t\t%s\t\t%d\n", state->symbols[i].label, type, state->symbols[i].value);
+    }
+}
+
+// Function to print the symbols table
+void printExternalsTable(const AssemblerState* state) {
+    printf("\nExternals Table:\n\n");
+    printf("Label\t\tMem Line\n");
+    for (int i = 0; i < state->externalsCount; i++) {
+        printf("%s\t\t%d\n", state->externals[i].label, state->externals[i].lineNumber);
     }
 }
 

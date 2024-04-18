@@ -16,9 +16,10 @@ extern Opcode opcodes[];
 
 int findOpcodeIndex(const char* command);
 void initOperandTypes(int *types, int num, ...);
-bool parseOperands(int* srcType, int* destType, const char* operands, Opcode opcode);
+bool parseOperands(AssemblerState* state, int* srcType, int* destType, const char* operands, Opcode opcode);
+Symbol* findSymbolInST(AssemblerState* state, const char* name);
 bool isDirectIndexOperand(const char* operand);
-int determineOperandType(const char* operand);
+int determineOperandType(AssemblerState* state, const char* operand);
 bool isValidDirectOperand(const char* str);
 bool isValidType(int type, const int* allowedTypes);
 

@@ -80,7 +80,7 @@ void handleInstructions(AssemblerState* state, char* label, char* command, char*
     }
     // Validate and parse operands
     int srcType = -1, destType = -1;
-    if (!parseOperands(&srcType, &destType, operands, opcodes[opcodeIndex])) {
+    if (!parseOperands(state, &srcType, &destType, operands, opcodes[opcodeIndex])) {
         printf("Error on line %d: Invalid operands for '%s'\n", lineNumber, command);
         return;
     }

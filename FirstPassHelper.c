@@ -31,6 +31,28 @@ void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
     state->symbols[state->symbolsCount++] = newSymbol;
 }
 
+void dynamicInsertExternal(AssemblerState* state, External newExternal) {
+    // Check if initialization is needed
+    if (state->externalsCount == 0 || state->externals == NULL) {
+        state->externals = malloc(sizeof(Symbol));  // Allocate space for the first external
+        if (state->externals == NULL) {
+            fprintf(stderr, "Memory allocation failed!\n");
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        // Resize the externals array dynamically
+        External * temp = realloc(state->externals, (state->externalsCount + 1) * sizeof(External));
+        if (temp == NULL) {
+            fprintf(stderr, "Memory allocation failed during resizing!\n");
+            exit(EXIT_FAILURE);
+        }
+        state->externals = temp;
+    }
+
+    // Insert the new external
+    state->externals[state->externalsCount++] = newExternal;
+}
+
 char** splitFirstWhitespace(char* str) {
     char** parts = malloc(2 * sizeof(char*));
     char* tempStr = strdup(str); // Duplicate the string

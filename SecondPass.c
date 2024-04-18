@@ -17,6 +17,7 @@ void SecondPass(ParsedFile* parsedFile, AssemblerState* state) {
     // Call helper functions to print symbols table and data list
     printDataList(state);
     printSymbolsTable(state);
+    printExternalsTable(state);
     printInstructionsList(state);
     printf("\n\nSecond pass completed for: %s\n", parsedFile->fileName);
 }
@@ -31,7 +32,7 @@ void processInstructionLine(AssemblerState* state, char* command, char* operands
 
     // Validate and parse operands
     int srcType = -1, destType = -1;
-    if (!parseOperands(&srcType, &destType, operands, opcodes[opcodeIndex])) {
+    if (!parseOperands(state, &srcType, &destType, operands, opcodes[opcodeIndex])) {
         printf("Error on line %d: Invalid operands for '%s'\n", lineNumber, command);
         return;
     }
@@ -44,7 +45,7 @@ void processInstructionLine(AssemblerState* state, char* command, char* operands
 }
 
 void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
-    printf("\nHandling line: %s\n", line);
+    printf("\nHandling line: %s\n", line + INDEX_FIRST_INSTRUCTION);
     char** parts = splitFirstWhitespace(line);
     char* label = NULL;
     char* command = parts[0];
@@ -64,7 +65,14 @@ void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
 
     printf("handling command %s, operands: %s, and label: %s. "
            "First word value: %d\n", command, operands, label, state->instructions.array[state->instructionCounter]);
-    if (isDirective(line)) {
+    if (strcmp(command, ".entry") == 0) {
+        Symbol* symbol = findSymbolInST(state, operands);
+        if (symbol != NULL && symbol->type == DATA) {
+            symbol->type = ENTRY;
+        } else {
+            fprintf(stderr, "Error: .entry directive for non-DATA type symbol or undefined symbol at line %d\n", lineNumber);
+        }
+    } else if (isDirective(line)) {
         printf("Skipping directive: %s\n", line);
     } else {
         processInstructionLine(state, command, operands, lineNumber);
