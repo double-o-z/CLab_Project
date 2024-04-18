@@ -10,7 +10,7 @@
 
 void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol);
 void dynamicInsertExternal(AssemblerState* state, External newExternal);
-int findSymbolValue(const AssemblerState* state, const char* label);
+int findSymbolValue(AssemblerState* state, const char* label);
 
 void printSymbolsTable(const AssemblerState* state);
 void printDataList(const AssemblerState* state);

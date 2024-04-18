@@ -4,11 +4,6 @@
 void SecondPass(ParsedFile* parsedFile, AssemblerState* state) {
     printf("\n\nSecond pass for: %s\n", parsedFile->fileName);
 
-    if (state->assemblerError) {
-        printf("Aborting second pass due to error in assembler during first pass.\n");
-        return;
-    }
-
     for (int i = 0; i < parsedFile->numberOfLines; i++) {
         // Process each line with the newly created helper function
         processLineSecondPass(state, parsedFile->lines[i], i + 1);

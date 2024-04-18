@@ -3,8 +3,11 @@
 
 void CreateOutput(AssemblerState* state, const char* fileName) {
     // Implement object files creation logic here
-    if (state->assemblerError)
+    if (state->assemblerError){
+        printf("\n\nErrors were found for input file: %s. Fix them and run again.\n", fileName);
         exit(1);
+    }
+
 
     printf("\n\nCreating object files for: %s\n", fileName);
     createExtFile(state, fileName);

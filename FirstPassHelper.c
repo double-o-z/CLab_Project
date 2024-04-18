@@ -136,7 +136,7 @@ void printInstructionsList(const AssemblerState* state) {
 }
 
 // Helper function to find a symbol in the symbol table and return its value
-int findSymbolValue(const AssemblerState* state, const char* label) {
+int findSymbolValue(AssemblerState* state, const char* label) {
     for (int i = 0; i < state->symbolsCount; i++) {
         if (strcmp(state->symbols[i].label, label) == 0) {
             if (state->symbols[i].type == MDEFINE) {
@@ -144,6 +144,7 @@ int findSymbolValue(const AssemblerState* state, const char* label) {
             }
             else {
                 fprintf(stderr, "Error: Usage of symbol '%s' is not allowed in this directive.\n", label);
+                state->assemblerError = true;
             }
 
         }

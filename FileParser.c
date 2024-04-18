@@ -62,7 +62,8 @@ ParsedFile ParseFile(const char* filename) {
     // Open the file with ".as" extension
     FILE* file = fopen(fullFilename, "r");
     if (file == NULL) {
-        fprintf(stderr, "Error opening file: %s\n", fullFilename);
+        fprintf(stderr, "Error opening file: %s. Try again or check the file is free for reading.\n",
+                fullFilename);
         free(fullFilename);
         return parsedFile; // Return with error
     }

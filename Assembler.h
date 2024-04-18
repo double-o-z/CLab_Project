@@ -4,6 +4,8 @@
 #include "Helper.h"
 
 void Assemble(const char* inputFilename);
+void freeParsedFile(ParsedFile* parsedFile);
+void freeAssemblerState(AssemblerState* state);
 
 #endif
 
