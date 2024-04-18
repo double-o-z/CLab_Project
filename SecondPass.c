@@ -1,7 +1,7 @@
 #include "SecondPass.h"
 #include <stdio.h>
 
-void SecondPass(AssemblerState* state) {
+void secondPass(AssemblerState* state) {
     if (state->debugMode){
         printf("\n\n\nSecond pass for: %s\n", state->inputFilename);
     }
@@ -9,11 +9,11 @@ void SecondPass(AssemblerState* state) {
     for (state->parsedFile.currentLineNum = 0;
          state->parsedFile.currentLineNum < state->parsedFile.numberOfLines;
          state->parsedFile.currentLineNum++) {
-        // Process each line with the newly created helper function
+        /*  Process each line with the newly created helper function */
         processLineSecondPass(state);
     }
 
-    // Call helper functions to print symbols table and data list
+    /*  Call helper functions to print symbols table and data list */
     if (state->debugMode){
         printDataList(state);
         printSymbolsTable(state);
@@ -24,8 +24,9 @@ void SecondPass(AssemblerState* state) {
 }
 
 void processInstructionLine(AssemblerState* state, char* command, char* operands) {
-    // Find opcode index based on the command
-    int opcodeIndex = findOpcodeIndex(command);
+    int opcodeIndex, srcType, destType;
+    /*  Find opcode index based on the command */
+    opcodeIndex = findOpcodeIndex(command);
     if (opcodeIndex == -1) {
         printf("Error on line %d: Unknown command '%s'\n"
                "with line: %s\n",
@@ -36,44 +37,49 @@ void processInstructionLine(AssemblerState* state, char* command, char* operands
         return;
     }
 
-    // Validate and parse operands
-    int srcType = -1, destType = -1;
+    /*  Validate and parse operands */
+    srcType = -1;
+    destType = -1;
     if (!parseOperands(state, &srcType, &destType, operands, opcodes[opcodeIndex])) {
         printf("Error on line %d: Invalid operands for '%s'\n", state->parsedFile.currentLineNum + 1, command);
         state->assemblerError = true;
         return;
     }
 
-    // Move to the next instruction location before encoding additional words.
-    // First word of each instruction was calculated and inserted during first pass.
+    /*  Move to the next instruction location before encoding additional words. */
+    /*  First word of each instruction was calculated and inserted during first pass. */
     state->instructionCounter++;
 
-    // Encode the additional operand data words (between 0 and 4 additional words).
+    /*  Encode the additional operand data words (between 0 and 4 additional words). */
     encodeOperandDataWords(state, srcType, destType, operands);
 }
 
 void processLineSecondPass(AssemblerState* state) {
-    char* line = state->parsedFile.lines[state->parsedFile.currentLineNum];
-    int lineNumber = state->parsedFile.currentLineNum + 1;
+    char **parts, *line, *label, *command, *operands;
+    int lineNumber, len;
+    Symbol* symbol;
+
+    line = state->parsedFile.lines[state->parsedFile.currentLineNum];
+    lineNumber = state->parsedFile.currentLineNum + 1;
     if (state->debugMode){
         printf("\nHandling line number: %d, with text: %s\n",
                state->parsedFile.currentLineNum + 1, line);
     }
 
-    // Skip empty lines and lines starting with ';'
+    /*  Skip empty lines and lines starting with ';' */
     if (line[0] == '\0' || line[0] == ';') {
         return;
     }
 
-    char** parts = splitFirstWhitespace(line);
-    char* label = NULL;
-    char* command = parts[0];
-    char* operands = parts[1];
+    parts = splitFirstWhitespace(line);
+    label = NULL;
+    command = parts[0];
+    operands = parts[1];
 
-    // Check if the line defines a label
-    int len = strlen(command);
+    /*  Check if the line defines a label */
+    len = strlen(command);
     if (command[len - 1] == ':') {
-        command[len - 1] = '\0';  // Remove colon
+        command[len - 1] = '\0';  /*  Remove colon */
         label = command;
         if (operands) {
             parts = splitFirstWhitespace(operands);
@@ -87,8 +93,8 @@ void processLineSecondPass(AssemblerState* state) {
                "First word value: %d\n", command, operands, label, state->instructions.array[state->instructionCounter]);
     }
 
-    if (strcmp(command, ".entry") == 0) { // Update symbol as entry in symbols table, now that it should exist there.
-        Symbol* symbol = findSymbolInST(state, operands);
+    if (strcmp(command, ".entry") == 0) { /*  Update symbol as entry in symbols table, now that it should exist there. */
+        symbol = findSymbolInST(state, operands);
         if (symbol != NULL && (symbol->type == DATA || symbol->type == CODE)) {
             symbol->type = ENTRY;
             state->entriesExist = true;
@@ -112,7 +118,7 @@ void processLineSecondPass(AssemblerState* state) {
         processInstructionLine(state, command, operands);
     }
 
-    // Clean up parts
+    /*  Clean up parts */
     free(parts[0]);
     if (parts[1] != NULL) {
         free(parts[1]);

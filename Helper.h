@@ -28,26 +28,27 @@ typedef struct {
 } External;
 
 typedef struct {
-    int* array;     // Array of data or instructions
-    int count;      // Counter for number of elements (DC or IC)
+    int* array;     /*  Array of data or instructions */
+    int count;      /*  Counter for number of elements (DC or IC) */
 } DynamicArray;
 
 typedef struct {
-    const char* inputFilename;  // The current file name without extension.
-    DynamicArray instructions;  // Instructions array with IC
-    DynamicArray data;          // Data array with DC
-    Symbol* symbols;            // Symbol table
-    int symbolsCount;           // Number of symbols currently stored
-    bool assemblerError;        // Flag that tells whether assembler can create output or not.
-    int instructionCounter;     // Counter for the current instruction in the second pass
-    External* externals;        // Externals array.
-    int externalsCount;         // Number of externals currently stored
-    bool entriesExist;          // To know whether at least one entry directive exists.
-    bool debugMode;             // Debug mode flag
-    ParsedFile parsedFile;      // The contents of the input file after parsing.
+    const char* inputFilename;  /*  The current file name without extension. */
+    DynamicArray instructions;  /*  Instructions array with IC */
+    DynamicArray data;          /*  Data array with DC */
+    Symbol* symbols;            /*  Symbol table */
+    int symbolsCount;           /*  Number of symbols currently stored */
+    bool assemblerError;        /*  Flag that tells whether assembler can create output or not. */
+    int instructionCounter;     /*  Counter for the current instruction in the second pass */
+    External* externals;        /*  Externals array. */
+    int externalsCount;         /*  Number of externals currently stored */
+    bool entriesExist;          /*  To know whether at least one entry directive exists. */
+    bool debugMode;             /*  Debug mode flag */
+    ParsedFile parsedFile;      /*  The contents of the input file after parsing. */
 } AssemblerState;
 
 AssemblerState initAssemblerState(const char* inputFilename, bool debugMode);
+
 void dynamicInsert(AssemblerState* state, DynamicArray* array, int value);
 
 void printAllLines(AssemblerState* state);

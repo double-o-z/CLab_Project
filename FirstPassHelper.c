@@ -1,25 +1,26 @@
 #include "FirstPassHelper.h"
 
 void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
-    // Check for existing symbol
-    for (int i = 0; i < state->symbolsCount; i++) {
+    /*  Check for existing symbol */
+    int i;
+    for (i = 0; i < state->symbolsCount; i++) {
         if (strcmp(state->symbols[i].label, newSymbol.label) == 0) {
             fprintf(stderr, "Error: Duplicate symbol '%s' found.\n", newSymbol.label);
             state->assemblerError = true;
-            return;  // Do not add the duplicate symbol, return immediately
+            return;  /*  Do not add the duplicate symbol, return immediately */
         }
     }
 
-    // Check if initialization is needed
+    /*  Check if initialization is needed */
     if (state->symbolsCount == 0 || state->symbols == NULL) {
-        state->symbols = malloc(sizeof(Symbol));  // Allocate space for the first symbol
+        state->symbols = malloc(sizeof(Symbol));  /*  Allocate space for the first symbol */
         if (state->symbols == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
             state->assemblerError = true;
             return;
         }
     } else {
-        // Resize the symbols array dynamically
+        /*  Resize the symbols array dynamically */
         Symbol* temp = realloc(state->symbols, (state->symbolsCount + 1) * sizeof(Symbol));
         if (temp == NULL) {
             fprintf(stderr, "Memory allocation failed during resizing!\n");
@@ -29,21 +30,21 @@ void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
         state->symbols = temp;
     }
 
-    // Insert the new symbol
+    /*  Insert the new symbol */
     state->symbols[state->symbolsCount++] = newSymbol;
 }
 
 void dynamicInsertExternal(AssemblerState* state, External newExternal) {
-    // Check if initialization is needed
+    /*  Check if initialization is needed */
     if (state->externalsCount == 0 || state->externals == NULL) {
-        state->externals = malloc(sizeof(External));  // Allocate space for the first external
+        state->externals = malloc(sizeof(External));  /*  Allocate space for the first external */
         if (state->externals == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
             state->assemblerError = true;
             return;
         }
     } else {
-        // Resize the externals array dynamically
+        /*  Resize the externals array dynamically */
         External * temp = realloc(state->externals, (state->externalsCount + 1) * sizeof(External));
         if (temp == NULL) {
             fprintf(stderr, "Memory allocation failed during resizing!\n");
@@ -53,52 +54,52 @@ void dynamicInsertExternal(AssemblerState* state, External newExternal) {
         state->externals = temp;
     }
 
-    // Insert the new external
+    /*  Insert the new external */
     state->externals[state->externalsCount++] = newExternal;
 }
 
 char** splitFirstWhitespace(char* str) {
     char** parts = malloc(2 * sizeof(char*));
-    char* tempStr = strdup(str); // Duplicate the string
+    char* tempStr = strdup(str); /*  Duplicate the string */
     char* firstSpace = strchr(tempStr, ' ');
 
     if (firstSpace != NULL) {
-        *firstSpace = '\0';  // Split the duplicated string
-        parts[0] = strdup(tempStr);  // Duplicate the first part
-        parts[1] = strdup(firstSpace + 1);  // Duplicate the second part
+        *firstSpace = '\0';  /*  Split the duplicated string */
+        parts[0] = strdup(tempStr);  /*  Duplicate the first part */
+        parts[1] = strdup(firstSpace + 1);  /*  Duplicate the second part */
     } else {
-        parts[0] = strdup(tempStr);  // Duplicate the whole string as only part
+        parts[0] = strdup(tempStr);  /*  Duplicate the whole string as only part */
         parts[1] = NULL;
     }
 
-    free(tempStr); // Free the temporary string
+    free(tempStr); /*  Free the temporary string */
     return parts;
 }
 
-// Helper function to trim whitespaces and tabs
+/*  Helper function to trim whitespaces and tabs */
 char* trim(char* str) {
     char* end;
 
-    // Trim leading space
+    /*  Trim leading space */
     while (isspace((unsigned char)*str)) str++;
 
-    if (*str == 0)  // All spaces?
+    if (*str == 0)  /*  All spaces? */
         return str;
 
-    // Trim trailing space
+    /*  Trim trailing space */
     end = str + strlen(str) - 1;
     while (end > str && isspace((unsigned char)*end)) end--;
 
-    // Write new null terminator character
+    /*  Write new null terminator character */
     end[1] = '\0';
     return str;
 }
 
 void intToBinaryString(int value, char *buffer) {
-    buffer[14] = '\0'; // Null terminator for the string
-    int pos = 13;
-    // Extract each bit and convert to string
-    for (int i = 0; i < 14; i++) {
+    int pos = 13, i;
+    buffer[14] = '\0'; /*  Null terminator for the string */
+    /*  Extract each bit and convert to string */
+    for (i = 0; i < 14; i++) {
         if (value & (1 << i)) {
             buffer[pos--] = '1';
         } else {
@@ -107,14 +108,15 @@ void intToBinaryString(int value, char *buffer) {
     }
 }
 
-// Function to print the data list
+/*  Function to print the data list */
 void printDataList(AssemblerState* state) {
+    int i;
+    char binaryString[15]; /*  14 bits + null terminator */
     printf("\nData List:\n");
-    // Using state->data.count to access the count from DynamicArray
-    for (int i = 0; i < state->data.count; i++) {
-        char binaryString[15]; // 14 bits + null terminator
+    /*  Using state->data.count to access the count from DynamicArray */
+    for (i = 0; i < state->data.count; i++) {
         intToBinaryString(state->data.array[i], binaryString);
-        // Accessing data through state->data.array
+        /*  Accessing data through state->data.array */
         printf("Index \t%d: \tInt: \t%d%s\t Binary: \t%s\n",
                i + INDEX_FIRST_INSTRUCTION + state->instructions.count,
                state->data.array[i],
@@ -123,14 +125,15 @@ void printDataList(AssemblerState* state) {
     }
 }
 
-// Function to print the instructions list
+/*  Function to print the instructions list */
 void printInstructionsList(AssemblerState* state) {
+    int i;
     printf("\nInstructions List:\n");
-    // Using state->instructions.count to access the count from DynamicArray
-    for (int i = 0; i < state->instructions.count; i++) {
-        char binaryString[15]; // 14 bits + null terminator
+    /*  Using state->instructions.count to access the count from DynamicArray */
+    for (i = 0; i < state->instructions.count; i++) {
+        char binaryString[15]; /*  14 bits + null terminator */
         intToBinaryString(state->instructions.array[i], binaryString);
-        // Accessing instructions through state->instructions.array
+        /*  Accessing instructions through state->instructions.array */
         printf("Index \t%d: \tInt: \t%d%s\t Binary: \t%s\n",
                i + INDEX_FIRST_INSTRUCTION,
                state->instructions.array[i],
@@ -139,9 +142,10 @@ void printInstructionsList(AssemblerState* state) {
     }
 }
 
-// Helper function to find a symbol in the symbol table and return its value
+/*  Helper function to find a symbol in the symbol table and return its value */
 int findSymbolValue(AssemblerState* state, const char* label) {
-    for (int i = 0; i < state->symbolsCount; i++) {
+    int i;
+    for (i = 0; i < state->symbolsCount; i++) {
         if (strcmp(state->symbols[i].label, label) == 0) {
             if (state->symbols[i].type == MDEFINE) {
                 return state->symbols[i].value;
@@ -153,31 +157,31 @@ int findSymbolValue(AssemblerState* state, const char* label) {
 
         }
     }
-    return -1;  // Return -1 if not found, you can handle this case based on your error handling strategy
+    return -1;  /*  Return -1 if not found, you can handle this case based on your error handling strategy */
 }
 
 int to14BitTwosComplement(int value) {
-    // Ensure the value is within the -8192 to 8191 range
-    value = value % 16384; // Modulo 2^14 to wrap around
+    /*  Ensure the value is within the -8192 to 8191 range */
+    value = value % 16384; /*  Modulo 2^14 to wrap around */
 
-    // If the value is negative, adjust it to be a valid 14-bit two's complement representation
+    /*  If the value is negative, adjust it to be a valid 14-bit two's complement representation */
     if (value < 0) {
-        value += 16384; // Adjust by 2^14
+        value += 16384; /*  Adjust by 2^14 */
     }
 
-    return value & 0x3FFF; // Apply a mask to ensure only the lowest 14 bits are kept
+    return value & 0x3FFF; /*  Apply a mask to ensure only the lowest 14 bits are kept */
 }
 
 int createFirstWord(AssemblerState* state, int srcType, int destType, int opcode) {
     int firstWord = 0;
 
-    // Ensure srcType and destType are non-negative before masking
+    /*  Ensure srcType and destType are non-negative before masking */
     srcType = (srcType >= 0) ? (srcType & 0x3) : 0;
     destType = (destType >= 0) ? (destType & 0x3) : 0;
 
-    firstWord |= srcType << 4;  // Source type in bits 4-5
-    firstWord |= destType << 2; // Destination type in bits 2-3
-    firstWord |= (opcode & 0xF) << 6;  // Opcode in bits 6-9
+    firstWord |= srcType << 4;  /*  Source type in bits 4-5 */
+    firstWord |= destType << 2; /*  Destination type in bits 2-3 */
+    firstWord |= (opcode & 0xF) << 6;  /*  Opcode in bits 6-9 */
 
     if (state->debugMode){
         printf("opcode: %d\n", opcode);
@@ -188,16 +192,16 @@ int createFirstWord(AssemblerState* state, int srcType, int destType, int opcode
 }
 
 void addInstructionToInstructionList(AssemblerState* state, DynamicArray* array, int instructionWord) {
-    // Check if the instructions array needs to be initialized
+    /*  Check if the instructions array needs to be initialized */
     if (array->count == 0 || array->array == NULL) {
-        array->array = malloc(sizeof(int));  // Allocate space for the first instruction
+        array->array = malloc(sizeof(int));  /*  Allocate space for the first instruction */
         if (array->array == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
             state->assemblerError = true;
             return;
         }
     } else {
-        // Resize the instructions array dynamically
+        /*  Resize the instructions array dynamically */
         int* temp = realloc(array->array, (array->count + 1) * sizeof(int));
         if (temp == NULL) {
             fprintf(stderr, "Memory allocation failed during resizing!\n");
@@ -207,27 +211,27 @@ void addInstructionToInstructionList(AssemblerState* state, DynamicArray* array,
         array->array = temp;
     }
 
-    // Add the new instruction to the array
+    /*  Add the new instruction to the array */
     array->array[array->count++] = instructionWord;
 }
 
 void prepareOperandDataWords(AssemblerState* state, int srcType, int destType) {
-    int additionalWords = 0;
-    // Determine the number of words needed for source operand
-    if (srcType == 2) { // Direct index
-        additionalWords += 2; // Two words: one for the symbol address and one for the index value
-    } else if (srcType == 0 || srcType == 1 || srcType == 3) { // Immediate, Direct, Register
+    int additionalWords = 0, i;
+    /*  Determine the number of words needed for source operand */
+    if (srcType == 2) { /*  Direct index */
+        additionalWords += 2; /*  Two words: one for the symbol address and one for the index value */
+    } else if (srcType == 0 || srcType == 1 || srcType == 3) { /*  Immediate, Direct, Register */
         additionalWords += 1;
     }
-    // Determine the number of words needed for destination operand
-    if (destType == 2) { // Direct index
-        additionalWords += 2; // Two words: one for the symbol address and one for the index value
-    } else if (destType == 0 || destType == 1 || destType == 3) { // Immediate, Direct, Register
+    /*  Determine the number of words needed for destination operand */
+    if (destType == 2) { /*  Direct index */
+        additionalWords += 2; /*  Two words: one for the symbol address and one for the index value */
+    } else if (destType == 0 || destType == 1 || destType == 3) { /*  Immediate, Direct, Register */
         additionalWords += 1;
     }
-    // Special case: if both operands are registers, consolidate into a single word
+    /*  Special case: if both operands are registers, consolidate into a single word */
     if (srcType == 3 && destType == 3) {
-        additionalWords = 1; // Only one word needed because register indices are packed into a single word
+        additionalWords = 1; /*  Only one word needed because register indices are packed into a single word */
     }
 
     if (state->debugMode){
@@ -235,13 +239,13 @@ void prepareOperandDataWords(AssemblerState* state, int srcType, int destType) {
         printf("additionalWords: %d\n", additionalWords);
     }
 
-    // Add the calculated number of additional words to the instruction list as placeholders (0)
-    for (int i = 0; i < additionalWords; i++) {
+    /*  Add the calculated number of additional words to the instruction list as placeholders (0) */
+    for (i = 0; i < additionalWords; i++) {
         if (state->debugMode){
             printf("adding operands instruction word\n");
         }
 
-        addInstructionToInstructionList(state, &state->instructions, 0); // Placeholder value 0
+        addInstructionToInstructionList(state, &state->instructions, 0); /* Placeholder value 0 */
     }
 }
 
@@ -256,7 +260,7 @@ const char* operandTypeToString(int type) {
         case 3:
             return "Register";
         default:
-            return "Unknown";  // For cases where the type is -1 or any undefined value
+            return "Unknown";  /* For cases where the type is -1 or any undefined value */
     }
 }
 

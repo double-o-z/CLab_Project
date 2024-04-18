@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-// Operand placement identifiers
+/*  Operand placement identifiers */
 typedef enum { SOURCE_OPERAND, DESTINATION_OPERAND } OperandPlacement;
 
 bool isDirective(char* line);

@@ -6,9 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#define MAX_LINE_LENGTH 80
+#define MAX_LINE_LENGTH 81
 
-void ParseFile(AssemblerState* state);
-void ReleaseLines(char** lines);
+void parseFile(AssemblerState* state);
 
 #endif /* PARSE_FILE_H */

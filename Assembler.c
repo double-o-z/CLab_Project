@@ -1,4 +1,4 @@
-// Assembler.c
+/*  Assembler.c */
 #include "Helper.h"
 #include "FileParser.h"
 #include "MacroProcessor.h"
@@ -8,43 +8,44 @@
 #include "Assembler.h"
 #include "stdio.h"
 
-void Assemble(AssemblerState* state) {
+void assembleProcess(AssemblerState* state) {
     printf("\nAssembling input file: %s\n", state->inputFilename);
 
-    // Parse the input file
-    ParseFile(state);
+    /*  Parse the input file */
+    parseFile(state);
 
-    // Check if an error occurred during the file parsing, if so, no point in continuing.
+    /*  Check if an error occurred during the file parsing, if so, no point in continuing. */
     if (state->assemblerError) {
         printf("Assembly errors detected. Aborting. Fix them and try again.\n\n");
     } else {
-        // Process macros within the file
-        ProcessMacro(state);
+        /*  Process macros within the file */
+        processMacro(state);
 
-        // Perform the first pass of assembly
-        FirstPass(state);
+        /*  Perform the first pass of assembly */
+        firstPass(state);
 
-        // Perform the second pass of assembly
-        SecondPass(state);
+        /*  Perform the second pass of assembly */
+        secondPass(state);
 
-        // Check if an error occurred during the second pass
+        /*  Check if an error occurred during the second pass */
         if (state->assemblerError) {
             printf("Assembly errors detected. Aborting. Fix them and try again.\n\n");
         } else {
-            // Create output files if no errors occurred
-            CreateOutput(state);
+            /*  Create output files if no errors occurred */
+            createOutput(state);
             printf("Finished Assembling input file: %s\n\n", state->inputFilename);
         }
     }
 
-    // Free the memory allocated to the state and parsedFile
+    /*  Free the memory allocated to the state and parsedFile */
     freeAssemblerState(state);
 }
 
 void freeAssemblerState(AssemblerState* state) {
-    // Free parsedFile data.
+    /*  Free parsedFile data. */
     if (state->parsedFile.lines) {
-        for (int i = 0; i < state->parsedFile.numberOfLines; i++) {
+        int i;
+        for (i = 0; i < state->parsedFile.numberOfLines; i++) {
             if (state->parsedFile.lines[i]) {
                 free(state->parsedFile.lines[i]);
             }
@@ -52,7 +53,7 @@ void freeAssemblerState(AssemblerState* state) {
         free(state->parsedFile.lines);
     }
 
-    // Free instruction and data arrays
+    /*  Free instruction and data arrays */
     if (state->instructions.array) {
         free(state->instructions.array);
     }
@@ -60,9 +61,10 @@ void freeAssemblerState(AssemblerState* state) {
         free(state->data.array);
     }
 
-    // Free symbols
+    /*  Free symbols */
     if (state->symbols) {
-        for (int i = 0; i < state->symbolsCount; i++) {
+        int i;
+        for (i = 0; i < state->symbolsCount; i++) {
             if (state->symbols[i].label) {
                 free(state->symbols[i].label);
             }
@@ -70,9 +72,10 @@ void freeAssemblerState(AssemblerState* state) {
         free(state->symbols);
     }
 
-    // Free externals
+    /*  Free externals */
     if (state->externals) {
-        for (int i = 0; i < state->externalsCount; i++) {
+        int i;
+        for (i = 0; i < state->externalsCount; i++) {
             if (state->externals[i].label) {
                 free(state->externals[i].label);
             }
