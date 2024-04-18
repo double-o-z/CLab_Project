@@ -114,6 +114,8 @@ void ProcessMacro(AssemblerState* state) {
     // Write to file if macros were processed
     if (macrosExist) {
         writeFileIfMacrosExist(state);
+        printf("Found and processed macros; From now on, errors are reported with %s.am file.\n",
+               state->inputFilename);
     } else {
         printf("No macros were processed; no changes were made to the file.\n");
     }

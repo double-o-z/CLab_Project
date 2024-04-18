@@ -151,8 +151,8 @@ void encodeImmediateOperand(AssemblerState* state, char* operand, bool isSubOper
             if (symbol && symbol->type == MDEFINE) {
                 value = symbol->value;
             } else {
-                printf("Error: Symbol '%s' not found or invalid type at instruction %d\n",
-                       valueStr, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+                printf("Error: Symbol '%s' not found or invalid type at line %d\n",
+                       valueStr, state->parsedFile.currentLineNum + 1);
                 valid = false;
                 state->assemblerError = true;
             }

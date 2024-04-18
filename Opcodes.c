@@ -129,7 +129,8 @@ bool isDirectIndexOperand(const char* operand) {
         return false;
 
     // Check the index part to be either a symbol or an integer
-    if (isalpha(index[0])) {  // Start with a letter implies it's a symbol (assuming type MDEFINE is checked during the second pass)
+    // Start with a letter implies it's a symbol (assuming type MDEFINE is checked during the second pass)
+    if (isalpha(index[0])) {
         return isValidDirectOperand(index);
     } else { // Otherwise, check if it's a valid integer
         char* end;

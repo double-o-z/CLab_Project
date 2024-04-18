@@ -1,9 +1,14 @@
 ; file ps.as
 .entry LIST
 .extern W
-.define sz = 2
+
+    ;
+;
+;
+   ;
+.define sz = 1
 mcr m_mcr
-cmp r3, #sz
+cmp r3, L3
 bne END
 endmcr
 MAIN: mov r3, LIST[sz]
@@ -17,6 +22,7 @@ m_mcr
 bne W
 L1: inc L3
 .entry LOOP
+    .entry LOOP
 bne LOOP
 END: hlt
 .define len = 4
