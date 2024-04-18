@@ -12,7 +12,7 @@ LOOP: jmp W
 prn #-5
 mov STR[5], STR[2]
 sub r1, r4
-cmp K, #sz
+cmp K, #sz, END
 bne W
 L1: inc L3
     .entry LOOP

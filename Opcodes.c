@@ -59,6 +59,8 @@ bool parseOperands(AssemblerState* state, int* srcType, int* destType, const cha
             *srcType = type; /*  Initially assume first token as source */
         } else if (pos == 1) {
             *destType = type; /*  Second token, if exists, is destination */
+        } else {
+            return false;  /* Too many operands. Return false, error will be made by caller. */
         }
         token = strtok(NULL, ",");
         pos++;
