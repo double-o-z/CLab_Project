@@ -41,11 +41,12 @@ void processInstructionLine(AssemblerState* state, char* command, char* operands
     state->instructionCounter++;
 
     // Encode the additional operand data words
-    encodeOperandDataWords(state, srcType, destType, operands, lineNumber);
+    encodeOperandDataWords(state, srcType, destType, operands);
 }
 
 void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
-    printf("\nHandling line: %s\n", line + INDEX_FIRST_INSTRUCTION);
+    printf("\nHandling with instructionCount: %d, with statement: %s\n",
+           state->instructionCounter + INDEX_FIRST_INSTRUCTION, line);
     char** parts = splitFirstWhitespace(line);
     char* label = NULL;
     char* command = parts[0];
@@ -70,7 +71,8 @@ void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
         if (symbol != NULL && symbol->type == DATA) {
             symbol->type = ENTRY;
         } else {
-            fprintf(stderr, "Error: .entry directive for non-DATA type symbol or undefined symbol at line %d\n", lineNumber);
+            fprintf(stderr, "Error: .entry directive for non-DATA "
+                            "type symbol or undefined symbol in file at line %d\n", lineNumber);
         }
     } else if (isDirective(line)) {
         printf("Skipping directive: %s\n", line);

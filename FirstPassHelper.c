@@ -34,7 +34,7 @@ void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
 void dynamicInsertExternal(AssemblerState* state, External newExternal) {
     // Check if initialization is needed
     if (state->externalsCount == 0 || state->externals == NULL) {
-        state->externals = malloc(sizeof(Symbol));  // Allocate space for the first external
+        state->externals = malloc(sizeof(External));  // Allocate space for the first external
         if (state->externals == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
             exit(EXIT_FAILURE);

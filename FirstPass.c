@@ -164,17 +164,13 @@ void handleExternalDirective(AssemblerState* state, char* operands, int lineNumb
     char* token = strtok(operands, ",");
     while (token) {
         token = trim(token);
-        int value;
-        if (isValidInteger(token)) {
-            value = atoi(token); // Convert to int
-        } else {
-            value = findSymbolValue(state, token);
-            if (value != -1) {
-                fprintf(stderr, "Error in line: %d, invalid operand for .extern command, "
-                                "it is already defined: %s\n", lineNumber, token);
-                token = strtok(NULL, ",");
-                continue;
-            }
+        Symbol* symbol = findSymbolInST(state, token);
+        if (symbol != NULL) {
+            fprintf(stderr, "Error in line: %d, invalid operand for .extern command, "
+                            "it is already defined locally: %s\n", lineNumber, token);
+            state->assemblerError = true;
+            token = strtok(NULL, ",");
+            continue;
         }
         Symbol newSymbol = {strdup(token), EXTERNAL, 0};
         dynamicInsertSymbol(state, newSymbol);

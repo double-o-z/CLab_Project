@@ -11,14 +11,14 @@
 typedef enum { SOURCE_OPERAND, DESTINATION_OPERAND } OperandPlacement;
 
 bool isDirective(char* line);
-void encodeOperandDataWords(AssemblerState* state, int srcType, int destType, char* operands, int lineNumber);
-void encodeRegisterPair(AssemblerState* state, char* srcOperand, char* destOperand, int lineNumber);
-void encodeOperandByType(AssemblerState* state, int type, char* operand, int lineNumber, OperandPlacement placement);
-void encodeImmediateOperand(AssemblerState* state, char* operands, int lineNumber, bool isSubOperand);
-void encodeDirectOperand(AssemblerState* state, char* operands, int lineNumber);
-void addExternalLocation(AssemblerState* state, char* label, int lineNumber);
-void encodeDirectIndexOperand(AssemblerState* state, char* operands, int lineNumber);
-void encodeRegisterOperand(AssemblerState* state, char* operand, int lineNumber, OperandPlacement placement);
+void encodeOperandDataWords(AssemblerState* state, int srcType, int destType, char* operands);
+void encodeRegisterPair(AssemblerState* state, char* srcOperand, char* destOperand);
+void encodeOperandByType(AssemblerState* state, int type, char* operand, OperandPlacement placement);
+void encodeImmediateOperand(AssemblerState* state, char* operands, bool isSubOperand);
+void encodeDirectOperand(AssemblerState* state, char* operands);
+void addExternalLocation(AssemblerState* state, char* label);
+void encodeDirectIndexOperand(AssemblerState* state, char* operands);
+void encodeRegisterOperand(AssemblerState* state, char* operand, OperandPlacement placement);
 int calculateRegisterPairWord(const char* srcOperand, const char* destOperand);
 int calculateRegisterWord(const char* operand, OperandPlacement placement);
 int calculateImmediateWord(int value);
