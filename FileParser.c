@@ -90,6 +90,15 @@ void parseFile(AssemblerState* state) {
 
     /*  Read lines from the file */
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        /* Check if the line was too long */
+        if (!strchr(buffer, '\n') && !feof(file)) {
+            /* Consume the rest of the line */
+            while (fgets(buffer, sizeof(buffer), file) && !strchr(buffer, '\n')) {}
+            printf("Error: Line %d exceeds 80 characters and has been skipped.\n",
+                   state->parsedFile.numberOfLines + 1);
+            state->assemblerError = true;
+            continue;  /* Skip this line and move to the next one */
+        }
         /*  Trim the line */
         trimmedLine = trimWhitespace(buffer);
 
