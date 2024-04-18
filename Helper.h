@@ -41,6 +41,7 @@ typedef struct {
     int instructionCounter;     // Counter for the current instruction in the second pass
     External* externals;        // Externals array.
     int externalsCount;         // Number of externals currently stored
+    bool entriesExist;          // To know whether at least one entry directive exists.
 } AssemblerState;
 
 void printAllLines(ParsedFile parsedFile);

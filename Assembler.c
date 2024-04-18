@@ -15,6 +15,6 @@ void Assemble(const char* inputFilename) {
     ProcessMacro(&parsedFile); // TODO: trim all whitespace and tabs after process macro, for file.am?
     FirstPass(&parsedFile, &state);
     SecondPass(&parsedFile, &state);
-    CreateOutput(&parsedFile);
+    CreateOutput(&state, inputFilename);
     printf("\n\nFinished Assembling input file: %s\n\n\n", inputFilename);
 }

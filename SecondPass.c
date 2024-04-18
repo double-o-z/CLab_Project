@@ -70,6 +70,7 @@ void processLineSecondPass(AssemblerState* state, char* line, int lineNumber) {
         Symbol* symbol = findSymbolInST(state, operands);
         if (symbol != NULL && symbol->type == DATA) {
             symbol->type = ENTRY;
+            state->entriesExist = true;
         } else {
             fprintf(stderr, "Error: .entry directive for non-DATA "
                             "type symbol or undefined symbol in file at line %d\n", lineNumber);

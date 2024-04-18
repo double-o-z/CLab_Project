@@ -23,6 +23,7 @@ AssemblerState initAssemblerState() {
     state.instructionCounter = 0;      // Initialize the second pass instruction counter
     state.externals = NULL;            // No initial allocation
     state.externalsCount = 0;          // Externals count initialized to 0
+    state.entriesExist = false;        // Default is false, until a valid entry directive is handled.
     return state;
 }
 
