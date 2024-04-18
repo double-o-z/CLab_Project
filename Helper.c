@@ -21,29 +21,35 @@ AssemblerState initAssemblerState(const char* inputFilename, bool debugMode) {
     state.debugMode = debugMode;          // Receive debugMode from main.
     state.parsedFile.lines = NULL;        // Parsed file's lines.
     state.parsedFile.numberOfLines = 0;   // Parsed file's number of lines.
+    state.parsedFile.currentLineNum = 0;  // Parsed file's current line number being processed.
     return state;
 }
 
-void dynamicInsert(DynamicArray* array, int value) {
+void dynamicInsert(AssemblerState* state, DynamicArray* array, int value) {
     // Check if initialization is needed
     if (array->count == 0 || array->array == NULL) {
         array->array = malloc(sizeof(int));  // Allocate space for the first element
         if (array->array == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
     } else {
         // Resize the array dynamically
         int* temp = realloc(array->array, (array->count + 1) * sizeof(int));
         if (temp == NULL) {
             fprintf(stderr, "Memory allocation failed during resizing!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
         array->array = temp;
     }
 
     // Insert the new value
-    printf("Adding to array value: %d\n", value);
+    if (state->debugMode){
+        printf("Adding to array value: %d\n", value);
+    }
+
     array->array[array->count++] = value;
 }
 
@@ -106,6 +112,6 @@ const char* symbolTypeToString(int type) {
         case 3:
             return "EXTERNAL";
         default:
-            return "ENTRY";  // For cases where the type is -1 or any undefined value
+            return "ENTRY";
     }
 }

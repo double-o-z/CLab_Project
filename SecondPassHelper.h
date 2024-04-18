@@ -19,8 +19,8 @@ void encodeDirectOperand(AssemblerState* state, char* operands);
 void addExternalLocation(AssemblerState* state, char* label);
 void encodeDirectIndexOperand(AssemblerState* state, char* operands);
 void encodeRegisterOperand(AssemblerState* state, char* operand, OperandPlacement placement);
-int calculateRegisterPairWord(const char* srcOperand, const char* destOperand);
-int calculateRegisterWord(const char* operand, OperandPlacement placement);
-int calculateImmediateWord(int value);
-int calculateDirectWord(int value, SymbolType type);
+int calculateRegisterPairWord(AssemblerState* state, const char* srcOperand, const char* destOperand);
+int calculateRegisterWord(AssemblerState* state, const char* operand, OperandPlacement placement);
+int calculateImmediateWord(AssemblerState* state, int value);
+int calculateDirectWord(AssemblerState* state, int value, SymbolType type);
 #endif /* SECONDPASSHELPER_H */

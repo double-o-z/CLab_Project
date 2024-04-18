@@ -1,24 +1,14 @@
 #include "SecondPassHelper.h"
 
-bool isDirective(char* line) {
-    // Trim leading whitespace
-    while (isspace((unsigned char)*line)) line++;
-
-    // Extract the first word from the line to check against known directives
-    char firstWord[100]; // Adjust size based on possible maximum length of directive
-    size_t index = 0;
-    while (!isspace((unsigned char)*line) && *line != '\0' && index < (sizeof(firstWord) - 1)) {
-        firstWord[index++] = *line++;
-    }
-    firstWord[index] = '\0';
-
+bool isDirective(char* command) {
     // List of known directive commands
     const char* directives[] = {
             ".define", ".data", ".string", ".extern", NULL
     };
 
+    // Check if the command matches any known directives
     for (const char** dir = directives; *dir != NULL; dir++) {
-        if (strcmp(firstWord, *dir) == 0) {
+        if (strcmp(command, *dir) == 0) {
             return true;
         }
     }
@@ -28,8 +18,7 @@ bool isDirective(char* line) {
 
 void encodeOperandDataWords(AssemblerState* state, int srcType, int destType, char* operands) {
     if (operands == NULL || strlen(operands) == 0) {
-        // No operands to process
-        printf("No operands at instruction %d\n", state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+        // No operands to process, but it's okay. It's supposed to be this way.
         return;
     }
 
@@ -45,6 +34,11 @@ void encodeOperandDataWords(AssemblerState* state, int srcType, int destType, ch
         destOperand = operands;  // Only one operand, it's a destination operand
     }
 
+    // Print operand types.
+    if (state->debugMode){
+        printOperandTypes(srcType, destType);
+    }
+
     // Special handling if both operands are registers
     if (srcType == 3 && destType == 3) {
         encodeRegisterPair(state, srcOperand, destOperand);
@@ -58,8 +52,6 @@ void encodeOperandDataWords(AssemblerState* state, int srcType, int destType, ch
             encodeOperandByType(state, destType, destOperand, DESTINATION_OPERAND);
         }
     }
-
-    printOperandTypes(srcType, destType);
 }
 
 void encodeOperandByType(AssemblerState* state, int type, char* operand, OperandPlacement placement) {
@@ -77,53 +69,73 @@ void encodeOperandByType(AssemblerState* state, int type, char* operand, Operand
             encodeRegisterOperand(state, operand, placement);
             break;
         default:
-            printf("Error on instruction %d: Invalid operand type %d\n",
-                   state->instructionCounter + INDEX_FIRST_INSTRUCTION, type);
+            printf("Error on line %d: Invalid operand type %d\n",
+                   state->parsedFile.currentLineNum + 1, type);
+            state->assemblerError = true;
             break;
     }
 }
 
 void encodeRegisterOperand(AssemblerState* state, char* operand, OperandPlacement placement) {
-    int value = calculateRegisterWord(operand, placement);
-    printf("Encoding register operand at instruction %d, placement: %s, and value: %d\n",
-           state->instructionCounter + INDEX_FIRST_INSTRUCTION,
-           placement == SOURCE_OPERAND ? "source" : "destination", value);
+    int value = calculateRegisterWord(state, operand, placement);
+    if (state->debugMode){
+        printf("Encoding register operand at instruction %d, placement: %s, and value: %d\n",
+               state->instructionCounter + INDEX_FIRST_INSTRUCTION,
+               placement == SOURCE_OPERAND ? "source" : "destination", value);
+    }
+
     state->instructions.array[state->instructionCounter] = value;
     state->instructionCounter++;
 }
 
-int calculateRegisterWord(const char* operand, OperandPlacement placement) {
+int calculateRegisterWord(AssemblerState* state, const char* operand, OperandPlacement placement) {
     int regIndex = operand[1] - '0';
+    int result;
     if (placement == SOURCE_OPERAND) {
-        return regIndex << 5;  // Shift for source register
+        result = regIndex << 5;  // Shift for source register
     } else {
-        return regIndex << 2;  // Shift for destination register
+        result = regIndex << 2;  // Shift for destination register
     }
+
+    if (state->debugMode){
+        printf("Result of calculateRegisterWord: %d\n", result);
+    }
+
+    return result;
 }
 
 void encodeRegisterPair(AssemblerState* state, char* srcOperand, char* destOperand) {
-    printf("Encoding register pair at instruction %d\n", state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    if (state->debugMode){
+        printf("Encoding register pair at instruction %d\n", state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    }
+
     // Logic to encode a pair of register operands into a single word
-    int regPairValue = calculateRegisterPairWord(srcOperand, destOperand); // Assume function to calculate the encoded word
+    // Assume function to calculate the encoded word
+    int regPairValue = calculateRegisterPairWord(state, srcOperand, destOperand);
     state->instructions.array[state->instructionCounter] = regPairValue;
     state->instructionCounter++;
 }
 
-int calculateRegisterPairWord(const char* srcOperand, const char* destOperand) {
+int calculateRegisterPairWord(AssemblerState* state, const char* srcOperand, const char* destOperand) {
     // Assumes srcOperand and destOperand are of the form "rX" where X is the register index
     int srcIndex = srcOperand[1] - '0';  // Convert char to int
     int destIndex = destOperand[1] - '0';  // Convert char to int
-
     int srcWord = srcIndex << 5;  // Shift source index left by 5 bits
     int destWord = destIndex << 2;  // Shift destination index left by 2 bits
     int result = srcWord + destWord;  // Combine the two words
-    printf("Result of calculateRegisterPairWord: %d\n", result);
+    if (state->debugMode){
+        printf("Result of calculateRegisterPairWord: %d\n", result);
+    }
+
     return result;
 }
 
 void encodeImmediateOperand(AssemblerState* state, char* operand, bool isSubOperand) {
-    printf("Encoding immediate operand: %s, at instruction %d\n",
-           operand, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    if (state->debugMode){
+        printf("Encoding immediate operand: %s, for instruction number %d\n",
+               operand, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    }
+
     int value = 0;
     bool valid = true; // Assume valid unless proven otherwise
 
@@ -142,6 +154,7 @@ void encodeImmediateOperand(AssemblerState* state, char* operand, bool isSubOper
                 printf("Error: Symbol '%s' not found or invalid type at instruction %d\n",
                        valueStr, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
                 valid = false;
+                state->assemblerError = true;
             }
         }
     }
@@ -151,16 +164,22 @@ void encodeImmediateOperand(AssemblerState* state, char* operand, bool isSubOper
         value = 0;                    // Use 0 as a placeholder value
     }
 
-    state->instructions.array[state->instructionCounter] = calculateImmediateWord(value);
+    state->instructions.array[state->instructionCounter] = calculateImmediateWord(state, value);
     state->instructionCounter++;
 }
 
 void encodeDirectOperand(AssemblerState* state, char* operand) {
-    printf("Encoding direct operand: %s, at instruction: %d\n",
-           operand, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    if (state->debugMode){
+        printf("Encoding direct operand: %s, for instruction number %d\n",
+               operand, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    }
+
     Symbol* symbol = findSymbolInST(state, operand);
     if (symbol != NULL){
-        printf("With symbol type: %s, and value: %d\n", symbolTypeToString(symbol->type), symbol->value);
+        if (state->debugMode){
+            printf("With symbol type: %s, and value: %d\n", symbolTypeToString(symbol->type), symbol->value);
+        }
+
         if (symbol->type == EXTERNAL) {
             addExternalLocation(state, symbol->label);
         }
@@ -168,34 +187,44 @@ void encodeDirectOperand(AssemblerState* state, char* operand) {
 
     // Ensure symbol exists and is of type DATA\ENTRY\EXTERNAL\CODE
     if (!symbol || symbol->type == MDEFINE) {
-        printf("Error: Symbol '%s' not found or invalid type at instruction %d\n",
-               operand, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+        printf("Error: Symbol '%s' not found or invalid type at line %d\n",
+               operand, state->parsedFile.currentLineNum + 1);
         state->assemblerError = true; // Error misuse of operand - using incompatible variable as list.
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
     } else {
-        state->instructions.array[state->instructionCounter++] = calculateDirectWord(symbol->value,
+        state->instructions.array[state->instructionCounter++] = calculateDirectWord(state,
+                                                                                     symbol->value,
                                                                                      symbol->type);
     }
 }
 
 void addExternalLocation(AssemblerState* state, char* label) {
     // Logic to add instruction index and symbol name to externalLocations list
-    printf("Adding external: %s, with instruction index: %d\n",
-           label, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    if (state->debugMode){
+        printf("Adding external: %s, for instruction number: %d\n",
+               label, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    }
+
     External newExternal = {strdup(label), state->instructionCounter + INDEX_FIRST_INSTRUCTION};
     dynamicInsertExternal(state, newExternal);
 }
 
 void encodeDirectIndexOperand(AssemblerState* state, char* operand) {
-    printf("Encoding direct index operand at instruction %d\n",
-           state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    if (state->debugMode){
+        printf("Encoding direct index operand: %s, for instruction number %d\n",
+               operand, state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+    }
+
     // Operand expected to be in the format "symbol[index]"
     char* symbolPart = strtok(operand, "[");
     char* indexPart = strtok(NULL, "]");
-    printf("With symbolPart: %s, and indexPart: %s\n", symbolPart, indexPart);
+    if (state->debugMode){
+        printf("With symbolPart: %s, and indexPart: %s\n", symbolPart, indexPart);
+    }
+
     if (!symbolPart || !indexPart) {
-        printf("Error: Invalid direct index operand format at instruction %d\n",
-               state->instructionCounter + INDEX_FIRST_INSTRUCTION);
+        printf("Error: Invalid direct index operand format at line %d\n",
+               state->parsedFile.currentLineNum + 1);
         state->assemblerError = true;
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
         state->instructions.array[state->instructionCounter++] = 0; // Placeholder
@@ -206,7 +235,7 @@ void encodeDirectIndexOperand(AssemblerState* state, char* operand) {
     encodeImmediateOperand(state, indexPart, true); // Handle the index part
 }
 
-int calculateDirectWord(int value, SymbolType type) {
+int calculateDirectWord(AssemblerState* state, int value, SymbolType type) {
     int result = value << 2; // Shift value left to leave room for A, R, E bits
     switch (type) {
         case DATA:
@@ -223,16 +252,25 @@ int calculateDirectWord(int value, SymbolType type) {
             break;
         default:
             // Default case, typically shouldn't happen unless there's an error in logic
-            printf("Unexpected symbol type for direct word calculation.\n");
+            printf("Unexpected symbol type for direct word calculation, at line: %d.\n",
+                   state->parsedFile.currentLineNum + 1);
+            state->assemblerError = true;
             break;
     }
-    printf("Result of calculateDirectWord: %d\n", result);
+
+    if (state->debugMode){
+        printf("Result of calculateDirectWord: %d\n", result);
+    }
+
     return result;
 }
 
-int calculateImmediateWord(int value) {
+int calculateImmediateWord(AssemblerState* state, int value) {
     // Shift the immediate value left by 2 bits to align it properly
     int result = value << 2;
-    printf("Result of calculateImmediateWord: %d\n", result);
+    if (state->debugMode){
+        printf("Result of calculateImmediateWord: %d\n", result);
+    }
+
     return result;
 }

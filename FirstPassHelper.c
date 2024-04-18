@@ -15,14 +15,16 @@ void dynamicInsertSymbol(AssemblerState* state, Symbol newSymbol) {
         state->symbols = malloc(sizeof(Symbol));  // Allocate space for the first symbol
         if (state->symbols == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
     } else {
         // Resize the symbols array dynamically
         Symbol* temp = realloc(state->symbols, (state->symbolsCount + 1) * sizeof(Symbol));
         if (temp == NULL) {
             fprintf(stderr, "Memory allocation failed during resizing!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
         state->symbols = temp;
     }
@@ -37,14 +39,16 @@ void dynamicInsertExternal(AssemblerState* state, External newExternal) {
         state->externals = malloc(sizeof(External));  // Allocate space for the first external
         if (state->externals == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
     } else {
         // Resize the externals array dynamically
         External * temp = realloc(state->externals, (state->externalsCount + 1) * sizeof(External));
         if (temp == NULL) {
             fprintf(stderr, "Memory allocation failed during resizing!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
         state->externals = temp;
     }
@@ -164,7 +168,7 @@ int to14BitTwosComplement(int value) {
     return value & 0x3FFF; // Apply a mask to ensure only the lowest 14 bits are kept
 }
 
-int createFirstWord(int srcType, int destType, int opcode) {
+int createFirstWord(AssemblerState* state, int srcType, int destType, int opcode) {
     int firstWord = 0;
 
     // Ensure srcType and destType are non-negative before masking
@@ -175,26 +179,30 @@ int createFirstWord(int srcType, int destType, int opcode) {
     firstWord |= destType << 2; // Destination type in bits 2-3
     firstWord |= (opcode & 0xF) << 6;  // Opcode in bits 6-9
 
-    printf("opcode: %d\n", opcode);
-    printf("opcode in bits 6-9: %d\n", (opcode & 0xF) << 6);
+    if (state->debugMode){
+        printf("opcode: %d\n", opcode);
+        printf("firstWord: %d\n", firstWord);
+    }
 
     return firstWord;
 }
 
-void addInstructionToInstructionList(DynamicArray* array, int instructionWord) {
+void addInstructionToInstructionList(AssemblerState* state, DynamicArray* array, int instructionWord) {
     // Check if the instructions array needs to be initialized
     if (array->count == 0 || array->array == NULL) {
         array->array = malloc(sizeof(int));  // Allocate space for the first instruction
         if (array->array == NULL) {
             fprintf(stderr, "Memory allocation failed!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
     } else {
         // Resize the instructions array dynamically
         int* temp = realloc(array->array, (array->count + 1) * sizeof(int));
         if (temp == NULL) {
             fprintf(stderr, "Memory allocation failed during resizing!\n");
-            exit(EXIT_FAILURE);
+            state->assemblerError = true;
+            return;
         }
         array->array = temp;
     }
@@ -222,12 +230,18 @@ void prepareOperandDataWords(AssemblerState* state, int srcType, int destType) {
         additionalWords = 1; // Only one word needed because register indices are packed into a single word
     }
 
-    printOperandTypes(srcType, destType);
-    printf("additionalWords: %d\n", additionalWords);
+    if (state->debugMode){
+        printOperandTypes(srcType, destType);
+        printf("additionalWords: %d\n", additionalWords);
+    }
+
     // Add the calculated number of additional words to the instruction list as placeholders (0)
     for (int i = 0; i < additionalWords; i++) {
-        printf("adding operands instruction word\n");
-        addInstructionToInstructionList(&state->instructions, 0); // Placeholder value 0
+        if (state->debugMode){
+            printf("adding operands instruction word\n");
+        }
+
+        addInstructionToInstructionList(state, &state->instructions, 0); // Placeholder value 0
     }
 }
 

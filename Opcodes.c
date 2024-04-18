@@ -81,7 +81,11 @@ bool parseOperands(AssemblerState* state, int* srcType, int* destType, const cha
         *destType = *srcType;
         *srcType = -1; // Reset source type since it's actually not provided
     }
-    printf("srcType: %d, destType: %d\n", *srcType, *destType);
+
+    if (state->debugMode){
+        printf("srcType: %d, destType: %d\n", *srcType, *destType);
+    }
+
     // Validate operand types
     return isValidType(*srcType, opcode.sourceTypes) &&
     isValidType(*destType, opcode.destTypes);

@@ -47,7 +47,9 @@ void writeFileIfMacrosExist(AssemblerState* state) {
 }
 
 void ProcessMacro(AssemblerState* state) {
-    printf("Processing macros for file: %s\n", state->inputFilename);
+    if (state->debugMode){
+        printf("Processing macros for file: %s\n", state->inputFilename);
+    }
 
     MacroList macroList = { .macros = malloc(sizeof(Macro) * INITIAL_MACRO_LIST_CAPACITY), .capacity = INITIAL_MACRO_LIST_CAPACITY, .count = 0 };
     char** newLines = malloc(sizeof(char*) * state->parsedFile.numberOfLines);
@@ -124,7 +126,9 @@ void ProcessMacro(AssemblerState* state) {
         free(macroList.macros[i].lines);
         free(macroList.macros[i].name);
     }
-    free(macroList.macros);
 
-    printAllLines(state);
+    free(macroList.macros);
+    if (state->debugMode){
+        printAllLines(state);
+    }
 }

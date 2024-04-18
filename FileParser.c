@@ -52,7 +52,10 @@ char* trimWhitespace(char* str) {
 
 // Function to parse the input file
 void ParseFile(AssemblerState* state) {
-    printf("Parsing file: %s\n", state->inputFilename);
+    if (state->debugMode){
+        printf("Parsing file: %s\n", state->inputFilename);
+    }
+
     // Create the full filename by appending ".as"
     char* fullFilename = malloc(strlen(state->inputFilename) + 4); // +3 for ".as" +1 for null terminator
     sprintf(fullFilename, "%s.as", state->inputFilename);
@@ -85,11 +88,6 @@ void ParseFile(AssemblerState* state) {
         // Trim the line
         char* trimmedLine = trimWhitespace(buffer);
 
-        // Skip empty lines and lines starting with ';'
-        if (trimmedLine[0] == '\0' || trimmedLine[0] == ';') {
-            continue;
-        }
-
         // Reallocate memory if needed
         if (size >= capacity) {
             capacity += CAPACITY_INCREMENT;
@@ -114,4 +112,10 @@ void ParseFile(AssemblerState* state) {
 
     state->parsedFile.lines = lines;
     state->parsedFile.numberOfLines = size;
+
+    if (state->debugMode){
+        printf("Finished parsing file: %s.\n"
+               "Found %d lines of code.\n",
+               state->inputFilename, state->parsedFile.numberOfLines);
+    }
 }

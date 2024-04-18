@@ -9,7 +9,7 @@
 #include "stdio.h"
 
 void Assemble(AssemblerState* state) {
-    printf("Assembling input file: %s\n", state->inputFilename);
+    printf("\nAssembling input file: %s\n", state->inputFilename);
 
     // Parse the input file
     ParseFile(state);
@@ -33,7 +33,7 @@ void Assemble(AssemblerState* state) {
         } else {
             // Create output files if no errors occurred
             CreateOutput(state);
-            printf("\n\nFinished Assembling input file: %s\n\n\n", state->inputFilename);
+            printf("Finished Assembling input file: %s\n\n", state->inputFilename);
         }
     }
 
@@ -78,5 +78,9 @@ void freeAssemblerState(AssemblerState* state) {
             }
         }
         free(state->externals);
+    }
+
+    if (state->debugMode) {
+        printf("Freed all allocated memory.\n");
     }
 }

@@ -11,6 +11,7 @@ extern const int INDEX_FIRST_INSTRUCTION;
 typedef struct {
     char** lines;
     int numberOfLines;
+    int currentLineNum;
 } ParsedFile;
 
 typedef enum { MDEFINE, CODE, DATA, EXTERNAL, ENTRY } SymbolType;
@@ -47,7 +48,7 @@ typedef struct {
 } AssemblerState;
 
 AssemblerState initAssemblerState(const char* inputFilename, bool debugMode);
-void dynamicInsert(DynamicArray* array, int value);
+void dynamicInsert(AssemblerState* state, DynamicArray* array, int value);
 
 void printAllLines(AssemblerState* state);
 void printSymbolsTable(AssemblerState* state);
