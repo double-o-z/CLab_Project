@@ -24,8 +24,8 @@ typedef struct {
 
 void ensureMacroCapacity(Macro* macro);
 void ensureMacroListCapacity(MacroList* list);
-
-void ProcessMacro(ParsedFile* parsedFile);
+void writeFileIfMacrosExist(AssemblerState* state);
+void ProcessMacro(AssemblerState* state);
 
 #endif
 

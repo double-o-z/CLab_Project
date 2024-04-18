@@ -25,15 +25,15 @@ void ensureMacroListCapacity(MacroList* list) {
     }
 }
 
-void writeFileIfMacrosExist(ParsedFile* parsedFile) {
-    if (parsedFile->numberOfLines > 0) {
-        char* fullFilename = malloc(strlen(parsedFile->fileName) + 4); // +3 for ".as" +1 for null terminator
-        sprintf(fullFilename, "%s.am", parsedFile->fileName);
+void writeFileIfMacrosExist(AssemblerState* state) {
+    if (state->parsedFile.numberOfLines > 0) {
+        char* fullFilename = malloc(strlen(state->inputFilename) + 4); // +3 for ".as" +1 for null terminator
+        sprintf(fullFilename, "%s.am", state->inputFilename);
 
         FILE* file = fopen(fullFilename, "w");
         if (file != NULL) {
-            for (int i = 0; i < parsedFile->numberOfLines; i++) {
-                fprintf(file, "%s\n", parsedFile->lines[i]);
+            for (int i = 0; i < state->parsedFile.numberOfLines; i++) {
+                fprintf(file, "%s\n", state->parsedFile.lines[i]);
             }
             fclose(file);
             printf("Output file created: %s\n", fullFilename);
@@ -46,18 +46,18 @@ void writeFileIfMacrosExist(ParsedFile* parsedFile) {
     }
 }
 
-void ProcessMacro(ParsedFile* parsedFile) {
-    printf("Processing macros for file: %s\n", parsedFile->fileName);
+void ProcessMacro(AssemblerState* state) {
+    printf("Processing macros for file: %s\n", state->inputFilename);
 
     MacroList macroList = { .macros = malloc(sizeof(Macro) * INITIAL_MACRO_LIST_CAPACITY), .capacity = INITIAL_MACRO_LIST_CAPACITY, .count = 0 };
-    char** newLines = malloc(sizeof(char*) * parsedFile->numberOfLines);
+    char** newLines = malloc(sizeof(char*) * state->parsedFile.numberOfLines);
     int newLineCount = 0;
     char macroName[MACRO_NAME_BUFFER_SIZE];
     int inMacro = 0;
     int macrosExist = 0;
 
-    for (int i = 0; i < parsedFile->numberOfLines; i++) {
-        char* line = parsedFile->lines[i];
+    for (int i = 0; i < state->parsedFile.numberOfLines; i++) {
+        char* line = state->parsedFile.lines[i];
 
         if (sscanf(line, "mcr %99s", macroName) == 1) {
             inMacro = 1;
@@ -78,7 +78,8 @@ void ProcessMacro(ParsedFile* parsedFile) {
 
         if (inMacro) {
             ensureMacroCapacity(&macroList.macros[macroList.count - 1]);
-            macroList.macros[macroList.count - 1].lines[macroList.macros[macroList.count - 1].lineCount++] = strdup(line);
+            macroList.macros[macroList.count - 1]
+            .lines[macroList.macros[macroList.count - 1].lineCount++] = strdup(line);
             continue;
         }
 
@@ -100,17 +101,17 @@ void ProcessMacro(ParsedFile* parsedFile) {
     }
 
     // Replace old lines with new lines
-    for (int i = 0; i < parsedFile->numberOfLines; i++) {
-        free(parsedFile->lines[i]);
+    for (int i = 0; i < state->parsedFile.numberOfLines; i++) {
+        free(state->parsedFile.lines[i]);
     }
-    free(parsedFile->lines);
+    free(state->parsedFile.lines);
 
-    parsedFile->lines = newLines;
-    parsedFile->numberOfLines = newLineCount;
+    state->parsedFile.lines = newLines;
+    state->parsedFile.numberOfLines = newLineCount;
 
     // Write to file if macros were processed
     if (macrosExist) {
-        writeFileIfMacrosExist(parsedFile);
+        writeFileIfMacrosExist(state);
     } else {
         printf("No macros were processed; no changes were made to the file.\n");
     }
@@ -125,5 +126,5 @@ void ProcessMacro(ParsedFile* parsedFile) {
     }
     free(macroList.macros);
 
-    printAllLines(*parsedFile);
+    printAllLines(state);
 }

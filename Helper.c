@@ -3,27 +3,24 @@
 
 const int INDEX_FIRST_INSTRUCTION = 100;
 
-void printAllLines(ParsedFile parsedFile) {
-    printf("parsedFile contains %d lines:\n\n", parsedFile.numberOfLines);
-    for (int i = 0; i < parsedFile.numberOfLines; i++) {
-        printf("\t%s\n\n", parsedFile.lines[i]);
-    }
-}
-
 // Initialize assembler state
-AssemblerState initAssemblerState() {
+AssemblerState initAssemblerState(const char* inputFilename, bool debugMode) {
     AssemblerState state;
-    state.instructions.array = NULL;   // No initial allocation
-    state.instructions.count = 0;      // IC initialized to 0
-    state.data.array = NULL;           // No initial allocation
-    state.data.count = 0;              // DC initialized to 0
-    state.symbols = NULL;              // No initial allocation
-    state.symbolsCount = 0;            // Symbols count initialized to 0
-    state.assemblerError = false;      // Initialize the duplicate flag as false
-    state.instructionCounter = 0;      // Initialize the second pass instruction counter
-    state.externals = NULL;            // No initial allocation
-    state.externalsCount = 0;          // Externals count initialized to 0
-    state.entriesExist = false;        // Default is false, until a valid entry directive is handled.
+    state.inputFilename = inputFilename;  // Receive input file name from main.
+    state.instructions.array = NULL;      // No initial allocation
+    state.instructions.count = 0;         // IC initialized to 0
+    state.data.array = NULL;              // No initial allocation
+    state.data.count = 0;                 // DC initialized to 0
+    state.symbols = NULL;                 // No initial allocation
+    state.symbolsCount = 0;               // Symbols count initialized to 0
+    state.assemblerError = false;         // Initialize the duplicate flag as false
+    state.instructionCounter = 0;         // Initialize the second pass instruction counter
+    state.externals = NULL;               // No initial allocation
+    state.externalsCount = 0;             // Externals count initialized to 0
+    state.entriesExist = false;           // Default is false, until a valid entry directive is handled.
+    state.debugMode = debugMode;          // Receive debugMode from main.
+    state.parsedFile.lines = NULL;        // Parsed file's lines.
+    state.parsedFile.numberOfLines = 0;   // Parsed file's number of lines.
     return state;
 }
 
@@ -51,7 +48,7 @@ void dynamicInsert(DynamicArray* array, int value) {
 }
 
 // Function to print the symbols table
-void printSymbolsTable(const AssemblerState* state) {
+void printSymbolsTable(AssemblerState* state) {
     printf("\nSymbols Table:\n\n");
     printf("Label\t\tType\t\tValue\n");
     for (int i = 0; i < state->symbolsCount; i++) {
@@ -69,11 +66,18 @@ void printSymbolsTable(const AssemblerState* state) {
 }
 
 // Function to print the symbols table
-void printExternalsTable(const AssemblerState* state) {
+void printExternalsTable(AssemblerState* state) {
     printf("\nExternals Table:\n\n");
     printf("Label\t\tMem Line\n");
     for (int i = 0; i < state->externalsCount; i++) {
         printf("%s\t\t%d\n", state->externals[i].label, state->externals[i].lineNumber);
+    }
+}
+
+void printAllLines(AssemblerState* state) {
+    printf("parsedFile contains %d lines:\n\n", state->parsedFile.numberOfLines);
+    for (int i = 0; i < state->parsedFile.numberOfLines; i++) {
+        printf("\t%s\n\n", state->parsedFile.lines[i]);
     }
 }
 

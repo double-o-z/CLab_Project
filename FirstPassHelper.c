@@ -104,7 +104,7 @@ void intToBinaryString(int value, char *buffer) {
 }
 
 // Function to print the data list
-void printDataList(const AssemblerState* state) {
+void printDataList(AssemblerState* state) {
     printf("\nData List:\n");
     // Using state->data.count to access the count from DynamicArray
     for (int i = 0; i < state->data.count; i++) {
@@ -120,7 +120,7 @@ void printDataList(const AssemblerState* state) {
 }
 
 // Function to print the instructions list
-void printInstructionsList(const AssemblerState* state) {
+void printInstructionsList(AssemblerState* state) {
     printf("\nInstructions List:\n");
     // Using state->instructions.count to access the count from DynamicArray
     for (int i = 0; i < state->instructions.count; i++) {

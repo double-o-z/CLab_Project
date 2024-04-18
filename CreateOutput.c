@@ -1,28 +1,28 @@
 #include "CreateOutput.h"
 #include <stdio.h>
 
-void CreateOutput(AssemblerState* state, const char* fileName) {
+void CreateOutput(AssemblerState* state) {
     // Implement object files creation logic here
     if (state->assemblerError){
-        printf("\n\nErrors were found for input file: %s. Fix them and run again.\n", fileName);
+        printf("\n\nErrors were found for input file: %s. Fix them and run again.\n", state->inputFilename);
         exit(1);
     }
 
 
-    printf("\n\nCreating object files for: %s\n", fileName);
-    createExtFile(state, fileName);
-    createEntFile(state, fileName);
-    createObjectFile(state, fileName);
+    printf("\n\nCreating object files for: %s\n", state->inputFilename);
+    createExtFile(state);
+    createEntFile(state);
+    createObjectFile(state);
 }
 
-void createExtFile(AssemblerState* state, const char* fileName){
+void createExtFile(AssemblerState* state){
     if (state->externalsCount == 0)
         return;
 
     printf("Creating externals output file.\n\n");
 
-    char* extFilename = malloc(strlen(fileName) + 5); // +4 for ".ext" +1 for null terminator
-    sprintf(extFilename, "%s.ext", fileName);
+    char* extFilename = malloc(strlen(state->inputFilename) + 5); // +4 for ".ext" +1 for null terminator
+    sprintf(extFilename, "%s.ext", state->inputFilename);
 
     FILE* file = fopen(extFilename, "w");
     if (file != NULL) {
@@ -41,14 +41,14 @@ void createExtFile(AssemblerState* state, const char* fileName){
     free(extFilename);
 }
 
-void createEntFile(AssemblerState* state, const char* fileName){
+void createEntFile(AssemblerState* state){
     if (!state->entriesExist)
         return;
 
     printf("Creating entries output file.\n");
 
-    char* entFilename = malloc(strlen(fileName) + 5); // +4 for ".ent" +1 for null terminator
-    sprintf(entFilename, "%s.ent", fileName);
+    char* entFilename = malloc(strlen(state->inputFilename) + 5); // +4 for ".ent" +1 for null terminator
+    sprintf(entFilename, "%s.ent", state->inputFilename);
 
     FILE* file = fopen(entFilename, "w");
     if (file != NULL) {
@@ -70,11 +70,11 @@ void createEntFile(AssemblerState* state, const char* fileName){
     free(entFilename);
 }
 
-void createObjectFile(AssemblerState* state, const char* fileName){
+void createObjectFile(AssemblerState* state){
     printf("Creating entries output file.\n");
 
-    char* objectFilename = malloc(strlen(fileName) + 4); // +3 for ".ob" +1 for null terminator
-    sprintf(objectFilename, "%s.ob", fileName);
+    char* objectFilename = malloc(strlen(state->inputFilename) + 4); // +3 for ".ob" +1 for null terminator
+    sprintf(objectFilename, "%s.ob", state->inputFilename);
 
     FILE* file = fopen(objectFilename, "w");
     if (file != NULL) {
@@ -99,7 +99,7 @@ void createObjectFile(AssemblerState* state, const char* fileName){
             intToBinaryString(state->data.array[i], binary);
             encodeBase4(binary, encoded);
             printf("Adding line to object file:\n"
-                   "%04d\t%s\n", i + INDEX_FIRST_INSTRUCTION, encoded);
+                   "%04d\t%s\n", i + INDEX_FIRST_INSTRUCTION + state->instructions.count, encoded);
             fprintf(file, "%04d\t%s\n", i + INDEX_FIRST_INSTRUCTION + state->instructions.count, encoded);
         }
 

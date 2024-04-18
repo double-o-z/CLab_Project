@@ -11,7 +11,6 @@ extern const int INDEX_FIRST_INSTRUCTION;
 typedef struct {
     char** lines;
     int numberOfLines;
-    const char* fileName;
 } ParsedFile;
 
 typedef enum { MDEFINE, CODE, DATA, EXTERNAL, ENTRY } SymbolType;
@@ -33,6 +32,7 @@ typedef struct {
 } DynamicArray;
 
 typedef struct {
+    const char* inputFilename;  // The current file name without extension.
     DynamicArray instructions;  // Instructions array with IC
     DynamicArray data;          // Data array with DC
     Symbol* symbols;            // Symbol table
@@ -42,13 +42,17 @@ typedef struct {
     External* externals;        // Externals array.
     int externalsCount;         // Number of externals currently stored
     bool entriesExist;          // To know whether at least one entry directive exists.
+    bool debugMode;             // Debug mode flag
+    ParsedFile parsedFile;      // The contents of the input file after parsing.
 } AssemblerState;
 
-void printAllLines(ParsedFile parsedFile);
+AssemblerState initAssemblerState(const char* inputFilename, bool debugMode);
 void dynamicInsert(DynamicArray* array, int value);
-AssemblerState initAssemblerState();
-void printSymbolsTable(const AssemblerState* state);
-void printExternalsTable(const AssemblerState* state);
+
+void printAllLines(AssemblerState* state);
+void printSymbolsTable(AssemblerState* state);
+void printExternalsTable(AssemblerState* state);
+
 bool isValidInteger(const char* str);
 const char* symbolTypeToString(int type);
 

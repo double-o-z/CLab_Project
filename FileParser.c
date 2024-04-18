@@ -51,13 +51,11 @@ char* trimWhitespace(char* str) {
 }
 
 // Function to parse the input file
-ParsedFile ParseFile(const char* filename) {
-    printf("Parsing file: %s\n", filename);
-    ParsedFile parsedFile = { .lines = NULL, .numberOfLines = 0, .fileName = filename };
-
+void ParseFile(AssemblerState* state) {
+    printf("Parsing file: %s\n", state->inputFilename);
     // Create the full filename by appending ".as"
-    char* fullFilename = malloc(strlen(parsedFile.fileName) + 4); // +3 for ".as" +1 for null terminator
-    sprintf(fullFilename, "%s.as", parsedFile.fileName);
+    char* fullFilename = malloc(strlen(state->inputFilename) + 4); // +3 for ".as" +1 for null terminator
+    sprintf(fullFilename, "%s.as", state->inputFilename);
 
     // Open the file with ".as" extension
     FILE* file = fopen(fullFilename, "r");
@@ -65,7 +63,8 @@ ParsedFile ParseFile(const char* filename) {
         fprintf(stderr, "Error opening file: %s. Try again or check the file is free for reading.\n",
                 fullFilename);
         free(fullFilename);
-        return parsedFile; // Return with error
+        state->assemblerError = true;
+        return; // Return with error
     }
 
     // Allocate memory for the dynamic list
@@ -73,11 +72,12 @@ ParsedFile ParseFile(const char* filename) {
     if (lines == NULL) {
         fprintf(stderr, "Error allocating memory.\n");
         fclose(file);
-        return parsedFile;
+        state->assemblerError = true;
+        return;
     }
+
     int capacity = INITIAL_CAPACITY;
     int size = 0;
-
     char buffer[MAX_LINE_LENGTH]; // Assuming maximum line length
 
     // Read lines from the file
@@ -98,9 +98,8 @@ ParsedFile ParseFile(const char* filename) {
                 fprintf(stderr, "Error reallocating memory.\n");
                 fclose(file);
                 free(lines);
-                parsedFile.lines = NULL; // Set to NULL to indicate an error
-                parsedFile.numberOfLines = 0;
-                return parsedFile;
+                state->assemblerError = true;
+                return;
             }
             lines = temp;
         }
@@ -113,9 +112,6 @@ ParsedFile ParseFile(const char* filename) {
     fclose(file);
     free(fullFilename);
 
-    parsedFile.lines = lines;
-    parsedFile.numberOfLines = size;
-
-    // printAllLines(parsedFile);
-    return parsedFile;
+    state->parsedFile.lines = lines;
+    state->parsedFile.numberOfLines = size;
 }

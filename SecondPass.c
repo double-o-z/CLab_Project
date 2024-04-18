@@ -1,12 +1,12 @@
 #include "SecondPass.h"
 #include <stdio.h>
 
-void SecondPass(ParsedFile* parsedFile, AssemblerState* state) {
-    printf("\n\nSecond pass for: %s\n", parsedFile->fileName);
+void SecondPass(AssemblerState* state) {
+    printf("\n\nSecond pass for: %s\n", state->inputFilename);
 
-    for (int i = 0; i < parsedFile->numberOfLines; i++) {
+    for (int i = 0; i < state->parsedFile.numberOfLines; i++) {
         // Process each line with the newly created helper function
-        processLineSecondPass(state, parsedFile->lines[i], i + 1);
+        processLineSecondPass(state, state->parsedFile.lines[i], i + 1);
     }
 
     // Call helper functions to print symbols table and data list
@@ -14,7 +14,7 @@ void SecondPass(ParsedFile* parsedFile, AssemblerState* state) {
     printSymbolsTable(state);
     printExternalsTable(state);
     printInstructionsList(state);
-    printf("\n\nSecond pass completed for: %s\n", parsedFile->fileName);
+    printf("\n\nSecond pass completed for: %s\n", state->inputFilename);
 }
 
 void processInstructionLine(AssemblerState* state, char* command, char* operands, int lineNumber) {

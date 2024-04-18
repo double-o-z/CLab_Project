@@ -1,12 +1,12 @@
 #include "FirstPass.h"
 
 // Main function to start the first pass
-void FirstPass(ParsedFile* parsedFile, AssemblerState* state) {
-    printf("First pass for: %s\n", parsedFile->fileName);
+void FirstPass(AssemblerState* state) {
+    printf("First pass for: %s\n", state->inputFilename);
 
-    for (int i = 0; i < parsedFile->numberOfLines; i++) {
+    for (int i = 0; i < state->parsedFile.numberOfLines; i++) {
         // Pass the current line number, i, to processLine; line numbers start at 1 for user clarity
-        processLine(state, parsedFile->lines[i], i + 1);
+        processLine(state, state->parsedFile.lines[i], i + 1);
     }
 
     // Update symbols table with this indices change.

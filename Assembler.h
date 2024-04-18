@@ -3,8 +3,7 @@
 #define ASSEMBLER_H
 #include "Helper.h"
 
-void Assemble(const char* inputFilename);
-void freeParsedFile(ParsedFile* parsedFile);
+void Assemble(AssemblerState* state);
 void freeAssemblerState(AssemblerState* state);
 
 #endif
