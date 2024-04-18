@@ -93,8 +93,15 @@ void processLineSecondPass(AssemblerState* state) {
             symbol->type = ENTRY;
             state->entriesExist = true;
         } else {
-            fprintf(stderr, "Error: .entry directive for non-DATA "
-                            "type symbol or undefined symbol in file at line %d\n", lineNumber);
+            if (symbol != NULL && symbol->type == ENTRY) {
+                fprintf(stderr, "Error: .entry directive, "
+                                "called multiple times for symbol %s in file, "
+                                "at line %d\n", symbol->label, lineNumber);
+            } else {
+                fprintf(stderr, "Error: .entry directive for non-DATA "
+                                "type symbol or undefined symbol in file at line %d\n", lineNumber);
+            }
+
             state->assemblerError = true;
         }
     } else if (isDirective(command)) {

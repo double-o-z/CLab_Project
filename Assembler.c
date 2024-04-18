@@ -16,7 +16,7 @@ void Assemble(AssemblerState* state) {
 
     // Check if an error occurred during the file parsing, if so, no point in continuing.
     if (state->assemblerError) {
-        printf("Assembly errors detected. Aborting. Fix them and try again.\n");
+        printf("Assembly errors detected. Aborting. Fix them and try again.\n\n");
     } else {
         // Process macros within the file
         ProcessMacro(state);
@@ -29,7 +29,7 @@ void Assemble(AssemblerState* state) {
 
         // Check if an error occurred during the second pass
         if (state->assemblerError) {
-            printf("Assembly errors detected. Aborting. Fix them and try again.\n");
+            printf("Assembly errors detected. Aborting. Fix them and try again.\n\n");
         } else {
             // Create output files if no errors occurred
             CreateOutput(state);
