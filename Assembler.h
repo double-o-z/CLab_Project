@@ -1,9 +1,10 @@
-// Assembler.h
+/*  Assembler.h */
 #ifndef ASSEMBLER_H
 #define ASSEMBLER_H
 #include "Helper.h"
 
-void Assemble(const char* inputFilename);
+void assembleProcess(AssemblerState* state);
+void freeAssemblerState(AssemblerState* state);
 
 #endif
 

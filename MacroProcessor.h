@@ -1,4 +1,4 @@
-// MacroProcessor.h
+/*  MacroProcessor.h */
 #ifndef MACROPROCESSOR_H
 #define MACROPROCESSOR_H
 #include "Helper.h"
@@ -24,8 +24,8 @@ typedef struct {
 
 void ensureMacroCapacity(Macro* macro);
 void ensureMacroListCapacity(MacroList* list);
-
-void ProcessMacro(ParsedFile* parsedFile);
+void writeFileIfMacrosExist(AssemblerState* state);
+void processMacro(AssemblerState* state);
 
 #endif
 
